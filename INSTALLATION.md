@@ -83,7 +83,7 @@ DB_HOST=db
 DB_PORT=3306
 DB_DATABASE=foodshop_db
 DB_USERNAME=foodshop_user
-DB_PASSWORD=foodshop_pass
+DB_PASSWORD=your_secure_password_here
 
 BROADCAST_DRIVER=log
 CACHE_DRIVER=redis
@@ -152,7 +152,7 @@ Truy cập: http://localhost:8081
 
 - **Server**: db
 - **Username**: foodshop_user
-- **Password**: foodshop_pass
+- **Password**: (use the password from docker-compose.yml)
 
 ### 3. Test Login Admin
 
@@ -161,9 +161,11 @@ curl -X POST http://localhost:8080/api/auth/admin/login \
   -H "Content-Type: application/json" \
   -d '{
     "email": "admin@foodshop.com",
-    "password": "admin123"
+    "password": "YOUR_ADMIN_PASSWORD"
   }'
 ```
+
+**⚠️ CẢNH BÁO BẢO MẬT**: Thay đổi mật khẩu mặc định ngay sau khi cài đặt!
 
 ### 4. Test Login Owner
 
@@ -172,7 +174,7 @@ curl -X POST http://localhost:8080/api/auth/owner/login \
   -H "Content-Type: application/json" \
   -d '{
     "email": "owner@foodshop.com",
-    "password": "owner123"
+    "password": "YOUR_OWNER_PASSWORD"
   }'
 ```
 
@@ -247,13 +249,18 @@ Sau khi chạy migrations, bạn sẽ có các bảng:
 
 ## 👤 Tài Khoản Mặc Định
 
+⚠️ **LƯU Ý BẢO MẬT QUAN TRỌNG**: 
+- Các tài khoản dưới đây được tạo tự động bởi seeder
+- **PHẢI thay đổi mật khẩu ngay sau khi cài đặt**
+- Không sử dụng mật khẩu mặc định trong môi trường production
+
 ### Admin
 - **Email**: admin@foodshop.com
-- **Password**: admin123
+- **Password mặc định**: `admin123` (⚠️ ĐỔI NGAY!)
 
 ### Restaurant Owner (Test)
 - **Email**: owner@foodshop.com
-- **Password**: owner123
+- **Password mặc định**: `owner123` (⚠️ ĐỔI NGAY!)
 
 ## 🌐 API Endpoints
 
