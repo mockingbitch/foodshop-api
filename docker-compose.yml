@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  # PHP-FPM Service
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: foodshop-app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+      - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - foodshop-network
+    depends_on:
+      - db
+      - redis
+
+  # Nginx Service
+  nginx:
+    image: nginx:alpine
+    container_name: foodshop-nginx
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/var/www
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - foodshop-network
+    depends_on:
+      - app
+
+  # MySQL Service
+  db:
+    image: mysql:8.0
+    container_name: foodshop-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: foodshop_db
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_USER: foodshop_user
+      MYSQL_PASSWORD: foodshop_pass
+    volumes:
+      - dbdata:/var/lib/mysql
+      - ./docker/mysql/my.cnf:/etc/mysql/my.cnf
+    ports:
+      - "3307:3306"
+    networks:
+      - foodshop-network
+
+  # Redis Service
+  redis:
+    image: redis:alpine
+    container_name: foodshop-redis
+    restart: unless-stopped
+    ports:
+      - "6380:6379"
+    networks:
+      - foodshop-network
+
+  # PhpMyAdmin Service
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: foodshop-phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_USER: foodshop_user
+      PMA_PASSWORD: foodshop_pass
+    ports:
+      - "8081:80"
+    networks:
+      - foodshop-network
+    depends_on:
+      - db
+
+networks:
+  foodshop-network:
+    driver: bridge
+
+volumes:
+  dbdata:
+    driver: local
