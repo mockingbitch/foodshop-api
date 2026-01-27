@@ -1,3 +1,5 @@
+version: '3.8'
+
 # Ultra-lightweight configuration for EC2 512MB RAM
 # Total memory usage: ~400-450MB
 
