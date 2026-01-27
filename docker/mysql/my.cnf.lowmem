@@ -1,0 +1,52 @@
+# Ultra-low memory MySQL configuration for 512MB EC2
+[mysqld]
+# Basic settings
+default-authentication-plugin=mysql_native_password
+skip-name-resolve
+
+# Memory settings (ultra conservative)
+innodb_buffer_pool_size=64M
+innodb_log_file_size=16M
+innodb_log_buffer_size=4M
+innodb_flush_log_at_trx_commit=2
+innodb_flush_method=O_DIRECT
+
+# Connection settings
+max_connections=50
+thread_cache_size=8
+table_open_cache=200
+table_definition_cache=100
+
+# Query cache disabled (saves memory)
+query_cache_size=0
+query_cache_type=0
+
+# Temporary tables
+tmp_table_size=8M
+max_heap_table_size=8M
+
+# Sort and join buffers (minimal)
+sort_buffer_size=256K
+read_buffer_size=128K
+read_rnd_buffer_size=256K
+join_buffer_size=128K
+key_buffer_size=8M
+
+# Packet size
+max_allowed_packet=16M
+
+# Thread settings
+thread_stack=128K
+
+# Binary log (minimal)
+binlog_cache_size=4K
+sync_binlog=0
+
+# Performance schema disabled (saves memory)
+performance_schema=OFF
+
+# Slow query log disabled
+slow_query_log=0
+
+[mysql]
+max_allowed_packet=16M

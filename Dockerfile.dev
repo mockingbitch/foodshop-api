@@ -1,0 +1,62 @@
+# Ultra-lightweight PHP-FPM image for 512MB EC2
+FROM php:8.2-fpm-alpine
+
+WORKDIR /var/www
+
+# Install only essential dependencies
+RUN apk add --no-cache --virtual .build-deps \
+    $PHPIZE_DEPS \
+    libpng-dev \
+    libzip-dev \
+    oniguruma-dev \
+    libxml2-dev \
+    freetype-dev \
+    libjpeg-turbo-dev \
+    libwebp-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
+    && docker-php-ext-install -j$(nproc) pdo_mysql mbstring gd zip \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
+    && apk del .build-deps \
+    && rm -rf /var/cache/apk/* /tmp/* /var/tmp/*
+
+# Install runtime dependencies only
+RUN apk add --no-cache \
+    libpng \
+    libzip \
+    oniguruma \
+    freetype \
+    libjpeg-turbo \
+    libwebp \
+    git
+
+# Get Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Copy application files
+COPY --chown=www-data:www-data . /var/www
+
+# Create Laravel directories and set permissions
+RUN mkdir -p storage/framework/cache \
+    storage/framework/sessions \
+    storage/framework/views \
+    storage/logs \
+    storage/app/public \
+    bootstrap/cache \
+    && chown -R www-data:www-data /var/www \
+    && chmod -R 775 storage bootstrap/cache
+
+# Note: Composer install will be done during deployment to save build time
+# and allow for .env configuration before installing dependencies
+
+# PHP-FPM optimization for low memory
+RUN echo "pm.max_children = 5" >> /usr/local/etc/php-fpm.d/www.conf \
+    && echo "pm.start_servers = 2" >> /usr/local/etc/php-fpm.d/www.conf \
+    && echo "pm.min_spare_servers = 1" >> /usr/local/etc/php-fpm.d/www.conf \
+    && echo "pm.max_spare_servers = 3" >> /usr/local/etc/php-fpm.d/www.conf \
+    && echo "pm.max_requests = 200" >> /usr/local/etc/php-fpm.d/www.conf \
+    && echo "memory_limit = 64M" >> /usr/local/etc/php/conf.d/memory.ini \
+    && echo "max_execution_time = 30" >> /usr/local/etc/php/conf.d/memory.ini
+
+EXPOSE 9000
+CMD ["php-fpm"]

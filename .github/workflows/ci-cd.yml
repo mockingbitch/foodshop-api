@@ -32,9 +32,14 @@ jobs:
           docker compose -f docker-compose.dev.yml up -d
           
           # Wait for services
-          sleep 10
+          sleep 15
+          
+          # Install/update dependencies (if needed)
+          echo "📦 Installing dependencies..."
+          docker compose -f docker-compose.dev.yml exec -T app composer install --no-interaction --optimize-autoloader || true
           
           # Run migrations
+          echo "📊 Running migrations..."
           docker compose -f docker-compose.dev.yml exec -T app php artisan migrate --force || true
           
           # Optimize Laravel
