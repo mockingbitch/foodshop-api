@@ -258,6 +258,7 @@ You can switch the language used with the tabs at the top right (or from the nav
             Strategies\Responses\ResponseCalls::withSettings(
                 only: ['GET *'],
                 // Recommended: disable debug mode in response calls to avoid error stack traces in responses
+                // Note: Response calls may fail if database is not available, but docs will still be generated
                 config: [
                     'app.debug' => false,
                 ]
@@ -271,7 +272,8 @@ You can switch the language used with the tabs at the top right (or from the nav
     // For response calls, API resource responses and transformer responses,
     // Scribe will try to start database transactions, so no changes are persisted to your database.
     // Tell Scribe which connections should be transacted here. If you only use one db connection, you can leave this as is.
-    'database_connections_to_transact' => [config('database.default')],
+    // Set to empty array to disable database transactions (useful when database is not available during docs generation)
+    'database_connections_to_transact' => [],
 
     'fractal' => [
         // If you are using a custom serializer with league/fractal, you can specify it here.
