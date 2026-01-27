@@ -1,53 +1,57 @@
-name: Laravel Deploy
-
+name: Deploy Foodshop API
 on:
   push:
     branches: [ "develop" ]
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
-      - name: Deploy to server
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SERVER_IP }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            cd /var/www
-            git pull origin develop
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check environment
+        run: |
+          whoami
+          pwd
+          docker --version
+
+      - name: Deploy
+        run: |
+          cd /var/www/html
+          
+          git pull origin develop
             
-            # Clean up old Docker images and containers to save space
-            echo "🧹 Cleaning up old Docker resources..."
-            docker system prune -af --volumes --filter "until=24h" || true
-            
-            # Build and start containers (using dev compose)
-            echo "🔨 Building Docker containers..."
-            docker-compose -f docker-compose.dev.yml build --no-cache --pull
-            
-            echo "🚀 Starting containers..."
-            docker-compose -f docker-compose.dev.yml up -d
-            
-            # Wait for services
-            sleep 10
-            
-            # Run migrations
-            echo "📊 Running migrations..."
-            docker-compose -f docker-compose.dev.yml exec -T app php artisan migrate --force || true
-            
-            # Optimize Laravel
-            echo "⚡ Optimizing Laravel..."
-            docker-compose -f docker-compose.dev.yml exec -T app php artisan config:cache
-            docker-compose -f docker-compose.dev.yml exec -T app php artisan route:cache
-            docker-compose -f docker-compose.dev.yml exec -T app php artisan view:cache
-            
-            # Clean up unused images
-            echo "🧹 Final cleanup..."
-            docker image prune -af --filter "until=48h" || true
-            
-            # Show disk usage
-            echo "💾 Disk usage:"
-            df -h
-            docker system df
+          # Clean up old Docker images and containers to save space
+          echo "🧹 Cleaning up old Docker resources..."
+          docker system prune -af --volumes --filter "until=24h" || true
+          
+          # Build and start containers (using dev compose)
+          echo "🔨 Building Docker containers..."
+          docker-compose -f docker-compose.dev.yml build --no-cache --pull
+          
+          echo "🚀 Starting containers..."
+          docker-compose -f docker-compose.dev.yml up -d
+          
+          # Wait for services
+          sleep 10
+          
+          # Run migrations
+          echo "📊 Running migrations..."
+          docker-compose -f docker-compose.dev.yml exec -T app php artisan migrate --force || true
+          
+          # Optimize Laravel
+          echo "⚡ Optimizing Laravel..."
+          docker-compose -f docker-compose.dev.yml exec -T app php artisan config:cache
+          docker-compose -f docker-compose.dev.yml exec -T app php artisan route:cache
+          docker-compose -f docker-compose.dev.yml exec -T app php artisan view:cache
+          
+          # Clean up unused images
+          echo "🧹 Final cleanup..."
+          docker image prune -af --filter "until=48h" || true
+          
+          # Show disk usage
+          echo "💾 Disk usage:"
+          df -h
+          docker system df
