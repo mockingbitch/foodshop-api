@@ -1,5 +1,3 @@
-version: '3.8'
-
 # Ultra-lightweight configuration for EC2 512MB RAM
 # Total memory usage: ~400-450MB
 
@@ -47,9 +45,10 @@ services:
     memswap_limit: 32m
     cpus: 0.25
 
-  # MySQL Service - Ultra lightweight configuration
+  # MySQL Service - Ultra lightweight configuration (ARM64 compatible)
   db:
-    image: mysql:8.0-debian
+    image: mysql:8.0
+    platform: linux/amd64  # Use AMD64 for compatibility, or use mysql/mysql-server:8.0 for ARM64
     container_name: foodshop-db
     restart: unless-stopped
     environment:
