@@ -7,8 +7,23 @@ use App\Models\Restaurant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
+/**
+ * @group Restaurants
+ * APIs for restaurant management
+ */
 class RestaurantController extends Controller
 {
+    /**
+     * Get List of Restaurants
+     * 
+     * Retrieve a paginated list of active restaurants
+     * 
+     * @queryParam country_id Filter by country ID. Example: 1
+     * @queryParam restaurant_type_id Filter by restaurant type ID. Example: 1
+     * @queryParam delivery_available Filter by delivery availability. Example: true
+     * @queryParam search Search by name or city. Example: pizza
+     * @queryParam per_page Items per page. Example: 15
+     */
     public function index(Request $request)
     {
         $query = Restaurant::with(['country', 'restaurantType', 'user'])
@@ -81,6 +96,13 @@ class RestaurantController extends Controller
         return response()->json($restaurants);
     }
 
+    /**
+     * Get Restaurant Details
+     * 
+     * Get detailed information about a specific restaurant
+     * 
+     * @urlParam id required The ID of the restaurant. Example: 1
+     */
     public function show($id)
     {
         $restaurant = Restaurant::with(['country', 'restaurantType', 'user', 'menus', 'reviews'])

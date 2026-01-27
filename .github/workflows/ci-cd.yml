@@ -22,33 +22,16 @@ jobs:
           cd /var/www/html
           
           git pull origin develop
-            
-          # Clean up old Docker images and containers to save space
-          docker system prune -af
-          
-          # Build and start containers (using dev compose)
-          docker compose -f docker-compose.dev.yml build --no-cache --pull
-          
-          docker compose -f docker-compose.dev.yml up -d
-          
-          # Wait for services
-          sleep 15
           
           # Install/update dependencies (if needed)
           echo "📦 Installing dependencies..."
-          docker compose -f docker-compose.dev.yml exec -T app composer install --no-interaction --optimize-autoloader || true
+          composer install --no-interaction --optimize-autoloader || true
           
           # Run migrations
           echo "📊 Running migrations..."
-          docker compose -f docker-compose.dev.yml exec -T app php artisan migrate --force || true
+          php artisan migrate --force || true
           
           # Optimize Laravel
-          docker compose -f docker-compose.dev.yml exec -T app php artisan config:cache
-          docker compose -f docker-compose.dev.yml exec -T app php artisan route:cache
-          docker compose -f docker-compose.dev.yml exec -T app php artisan view:cache
-          
-          # Clean up unused images
-          docker image prune -af --filter "until=48h" || true
-          
-          # Show disk usage
-          docker system df
+          php artisan config:cache
+          php artisan route:cache
+          php artisan view:cache

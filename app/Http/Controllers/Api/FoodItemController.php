@@ -7,8 +7,24 @@ use App\Models\FoodItem;
 use App\Models\Restaurant;
 use Illuminate\Http\Request;
 
+/**
+ * @group Food Items
+ * APIs for food item management
+ */
 class FoodItemController extends Controller
 {
+    /**
+     * Get List of Food Items
+     * 
+     * Retrieve a paginated list of active food items
+     * 
+     * @queryParam restaurant_id Filter by restaurant ID. Example: 1
+     * @queryParam category_id Filter by category ID. Example: 1
+     * @queryParam best_seller Filter best sellers. Example: true
+     * @queryParam vegetarian Filter vegetarian items. Example: true
+     * @queryParam search Search by name or food code. Example: pizza
+     * @queryParam per_page Items per page. Example: 15
+     */
     public function index(Request $request)
     {
         $query = FoodItem::with(['restaurant', 'foodCategory'])
@@ -83,6 +99,13 @@ class FoodItemController extends Controller
         return response()->json($foodItems);
     }
 
+    /**
+     * Get Food Item Details
+     * 
+     * Get detailed information about a specific food item
+     * 
+     * @urlParam id required The ID of the food item. Example: 1
+     */
     public function show($id)
     {
         $foodItem = FoodItem::with(['restaurant', 'foodCategory', 'reviews'])

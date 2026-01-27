@@ -9,8 +9,19 @@ use App\Models\News;
 use App\Models\User;
 use App\Models\Review;
 
+/**
+ * @group Admin
+ * Admin management APIs
+ */
 class AdminController extends Controller
 {
+    /**
+     * Get Dashboard Statistics
+     * 
+     * Get statistics for admin dashboard
+     * 
+     * @authenticated
+     */
     public function getStats()
     {
         $stats = [
