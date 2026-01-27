@@ -8,8 +8,19 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * @group Authentication
+ * APIs for authentication and user management
+ */
 class AuthController extends Controller
 {
+    /**
+     * Register Restaurant Owner
+     * 
+     * Register a new restaurant owner account
+     * 
+     * @unauthenticated
+     */
     public function registerOwner(Request $request)
     {
         $request->validate([
@@ -42,6 +53,13 @@ class AuthController extends Controller
         ], 201);
     }
 
+    /**
+     * Login as Restaurant Owner
+     * 
+     * Authenticate and get access token for restaurant owner
+     * 
+     * @unauthenticated
+     */
     public function loginOwner(Request $request)
     {
         $request->validate([
@@ -75,6 +93,13 @@ class AuthController extends Controller
         ]);
     }
 
+    /**
+     * Login as Admin
+     * 
+     * Authenticate and get access token for admin user
+     * 
+     * @unauthenticated
+     */
     public function loginAdmin(Request $request)
     {
         $request->validate([
@@ -108,6 +133,13 @@ class AuthController extends Controller
         ]);
     }
 
+    /**
+     * Logout
+     * 
+     * Revoke the current access token
+     * 
+     * @authenticated
+     */
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
@@ -117,6 +149,13 @@ class AuthController extends Controller
         ]);
     }
 
+    /**
+     * Get Current User
+     * 
+     * Get the authenticated user's information
+     * 
+     * @authenticated
+     */
     public function me(Request $request)
     {
         return response()->json([
@@ -124,6 +163,13 @@ class AuthController extends Controller
         ]);
     }
 
+    /**
+     * Update Owner Profile
+     * 
+     * Update the authenticated owner's profile information
+     * 
+     * @authenticated
+     */
     public function updateOwnerProfile(Request $request)
     {
         $user = $request->user();
