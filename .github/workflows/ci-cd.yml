@@ -15,7 +15,6 @@ jobs:
         run: |
           whoami
           pwd
-          docker --version
 
       - name: Deploy
         run: |
