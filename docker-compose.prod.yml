@@ -1,7 +1,9 @@
+# Production optimized docker-compose
+# Usage: docker-compose -f docker-compose.prod.yml up -d
+
 version: '3.8'
 
 services:
-  # PHP-FPM Service
   app:
     build:
       context: .
@@ -16,9 +18,9 @@ services:
       - foodshop-network
     depends_on:
       - db
-    # Remove Redis dependency if not using it
+    mem_limit: 512m
+    mem_reservation: 256m
 
-  # Nginx Service
   nginx:
     image: nginx:alpine
     container_name: foodshop-nginx
@@ -32,8 +34,9 @@ services:
       - foodshop-network
     depends_on:
       - app
+    mem_limit: 128m
+    mem_reservation: 64m
 
-  # MySQL Service - Using optimized image
   db:
     image: mysql:8.0-debian
     container_name: foodshop-db
@@ -46,21 +49,11 @@ services:
     volumes:
       - dbdata:/var/lib/mysql
       - ./docker/mysql/my.cnf:/etc/mysql/my.cnf
-    ports:
-      - "3307:3306"
     networks:
       - foodshop-network
     command: --default-authentication-plugin=mysql_native_password --innodb-buffer-pool-size=256M
-
-  # Redis Service - Only include if actually using Redis
-  # Uncomment if you need Redis for caching/queues
-  # redis:
-  #   image: redis:7-alpine
-  #   container_name: foodshop-redis
-  #   restart: unless-stopped
-  #   networks:
-  #     - foodshop-network
-  #   command: redis-server --maxmemory 128mb --maxmemory-policy allkeys-lru
+    mem_limit: 1g
+    mem_reservation: 512m
 
 networks:
   foodshop-network:

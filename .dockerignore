@@ -1,0 +1,88 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+README.md
+FEATURES.md
+INSTALLATION.md
+PROJECT_ANALYSIS.md
+SECURITY.md
+SWAGGER_*.md
+MAKEFILE_GUIDE.md
+
+# IDE
+.idea
+.vscode
+.fleet
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Build files
+/public/build
+/public/hot
+/public/storage
+
+# Environment
+.env
+.env.backup
+.env.production
+.env.local
+.env.*.local
+
+# Testing
+.phpunit.result.cache
+/phpunit.xml
+/tests
+/.phpunit.cache
+
+# CI/CD
+.github
+.gitlab-ci.yml
+.travis.yml
+
+# Docker
+docker-compose.yml
+docker-compose.*.yml
+Dockerfile*
+.dockerignore
+
+# Logs
+*.log
+storage/logs/*
+!storage/logs/.gitignore
+
+# Cache
+storage/framework/cache/*
+!storage/framework/cache/.gitignore
+storage/framework/sessions/*
+!storage/framework/sessions/.gitignore
+storage/framework/views/*
+!storage/framework/views/.gitignore
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# Deployment scripts
+deploy.sh
+setup.sh
+
+# Makefile
+Makefile
