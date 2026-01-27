@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\FoodItem;
 use Illuminate\Http\Request;
 
+/**
+ * @group Endpoints
+ */
 class AdminFoodItemController extends Controller
 {
     public function updateStatus(Request $request, $id)
@@ -23,6 +26,14 @@ class AdminFoodItemController extends Controller
         ]);
     }
 
+    /**
+     * GET api/admin/restaurants/{restaurantId}/food-items
+     * 
+     * Get food items for a restaurant (Admin only)
+     * 
+     * @urlParam restaurantId integer required The ID of the restaurant. Example: 17
+     * @queryParam status string Filter by status (active, hidden, pending). Example: active
+     */
     public function getRestaurantFoodItems($restaurantId, Request $request)
     {
         $query = FoodItem::with(['foodCategory'])

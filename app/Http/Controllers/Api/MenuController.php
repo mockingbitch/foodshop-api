@@ -7,8 +7,18 @@ use App\Models\Menu;
 use App\Models\Restaurant;
 use Illuminate\Http\Request;
 
+/**
+ * @group Endpoints
+ */
 class MenuController extends Controller
 {
+    /**
+     * GET api/restaurants/{restaurantId}/menus
+     * 
+     * Get list of menus for a restaurant
+     * 
+     * @urlParam restaurantId integer required The ID of the restaurant. Example: 17
+     */
     public function getMenus($restaurantId)
     {
         $menus = Menu::where('restaurant_id', $restaurantId)
@@ -19,6 +29,13 @@ class MenuController extends Controller
         return response()->json($menus);
     }
 
+    /**
+     * GET api/menus/{id}
+     * 
+     * Get menu details by ID
+     * 
+     * @urlParam id integer required The ID of the menu. Example: 17
+     */
     public function show($id)
     {
         $menu = Menu::with(['restaurant'])->findOrFail($id);
