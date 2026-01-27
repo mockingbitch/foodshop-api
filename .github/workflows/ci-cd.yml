@@ -23,25 +23,25 @@ jobs:
             echo "🧹 Cleaning up old Docker resources..."
             docker system prune -af --volumes --filter "until=24h" || true
             
-            # Build and start containers (using production compose)
+            # Build and start containers (using dev compose)
             echo "🔨 Building Docker containers..."
-            docker-compose -f docker-compose.prod.yml build --no-cache --pull
+            docker-compose -f docker-compose.dev.yml build --no-cache --pull
             
             echo "🚀 Starting containers..."
-            docker-compose -f docker-compose.prod.yml up -d
+            docker-compose -f docker-compose.dev.yml up -d
             
             # Wait for services
             sleep 10
             
             # Run migrations
             echo "📊 Running migrations..."
-            docker-compose -f docker-compose.prod.yml exec -T app php artisan migrate --force || true
+            docker-compose -f docker-compose.dev.yml exec -T app php artisan migrate --force || true
             
             # Optimize Laravel
             echo "⚡ Optimizing Laravel..."
-            docker-compose -f docker-compose.prod.yml exec -T app php artisan config:cache
-            docker-compose -f docker-compose.prod.yml exec -T app php artisan route:cache
-            docker-compose -f docker-compose.prod.yml exec -T app php artisan view:cache
+            docker-compose -f docker-compose.dev.yml exec -T app php artisan config:cache
+            docker-compose -f docker-compose.dev.yml exec -T app php artisan route:cache
+            docker-compose -f docker-compose.dev.yml exec -T app php artisan view:cache
             
             # Clean up unused images
             echo "🧹 Final cleanup..."
