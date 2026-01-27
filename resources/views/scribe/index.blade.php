@@ -60,6 +60,14 @@
                 <li class="tocify-item level-1" data-unique="introduction">
                     <a href="#introduction">Introduction</a>
                 </li>
+                                    <ul id="tocify-subheader-introduction" class="tocify-subheader">
+                                                    <li class="tocify-item level-2" data-unique="base-url">
+                                <a href="#base-url">Base URL</a>
+                            </li>
+                                                                                <li class="tocify-item level-2" data-unique="authentication">
+                                <a href="#authentication">Authentication</a>
+                            </li>
+                                                                        </ul>
                             </ul>
                     <ul id="tocify-header-authenticating-requests" class="tocify-header">
                 <li class="tocify-item level-1" data-unique="authenticating-requests">
@@ -321,23 +329,20 @@
 <aside>
     <strong>Base URL</strong>: <code>http://localhost:8080</code>
 </aside>
-<pre><code>This documentation aims to provide all the information you need to work with our FoodShop API.
-
-## Base URL
-All API requests should be made to: `http://localhost:8080/api`
-
-**Note**: Routes already include the `/api` prefix, so endpoints are accessed as `http://localhost:8080/api/{endpoint}`
-
-## Authentication
-Most endpoints require authentication using Bearer tokens. You can obtain a token by logging in through the authentication endpoints.
-
-### Getting Started
-1. Register a restaurant owner account or login as admin
-2. Copy the `access_token` from the response
-3. Include it in the Authorization header: `Bearer {your-token}`
-
-&lt;aside&gt;As you scroll, you'll see code examples for working with the API in different programming languages in the dark area to the right (or as part of the content on mobile).
-You can switch the language used with the tabs at the top right (or from the nav menu at the top left on mobile).&lt;/aside&gt;</code></pre>
+<p>This documentation aims to provide all the information you need to work with our FoodShop API.</p>
+<h2 id="base-url">Base URL</h2>
+<p>All API requests should be made to: <code>http://localhost:8080/api</code></p>
+<p><strong>Note</strong>: Routes already include the <code>/api</code> prefix, so endpoints are accessed as <code>http://localhost:8080/api/{endpoint}</code></p>
+<h2 id="authentication">Authentication</h2>
+<p>Most endpoints require authentication using Bearer tokens. You can obtain a token by logging in through the authentication endpoints.</p>
+<h3 id="getting-started">Getting Started</h3>
+<ol>
+<li>Register a restaurant owner account or login as admin</li>
+<li>Copy the <code>access_token</code> from the response</li>
+<li>Include it in the Authorization header: <code>Bearer {your-token}</code></li>
+</ol>
+<aside>As you scroll, you'll see code examples for working with the API in different programming languages in the dark area to the right (or as part of the content on mobile).
+You can switch the language used with the tabs at the top right (or from the nav menu at the top left on mobile).</aside>
 
         <h1 id="authenticating-requests">Authenticating requests</h1>
 <p>To authenticate requests, include an <strong><code>Authorization</code></strong> header with the value <strong><code>"Bearer Bearer {token}"</code></strong>.</p>
@@ -1493,7 +1498,7 @@ vary: Origin
 <code class="language-json" style="max-height: 300px;">{
     &quot;message&quot;: &quot;FoodShop API is running&quot;,
     &quot;version&quot;: &quot;1.0.0&quot;,
-    &quot;timestamp&quot;: &quot;2026-01-27T09:27:30.887574Z&quot;
+    &quot;timestamp&quot;: &quot;2026-01-27T10:26:34.686185Z&quot;
 }</code>
  </pre>
     </span>
@@ -2271,10 +2276,10 @@ vary: Origin
 <code class="language-json" style="max-height: 300px;">{
     &quot;current_page&quot;: 1,
     &quot;data&quot;: [],
-    &quot;first_page_url&quot;: &quot;http://localhost/api/restaurants/17/reviews?page=1&quot;,
+    &quot;first_page_url&quot;: &quot;http://localhost:8080/api/restaurants/17/reviews?page=1&quot;,
     &quot;from&quot;: null,
     &quot;last_page&quot;: 1,
-    &quot;last_page_url&quot;: &quot;http://localhost/api/restaurants/17/reviews?page=1&quot;,
+    &quot;last_page_url&quot;: &quot;http://localhost:8080/api/restaurants/17/reviews?page=1&quot;,
     &quot;links&quot;: [
         {
             &quot;url&quot;: null,
@@ -2283,7 +2288,7 @@ vary: Origin
             &quot;active&quot;: false
         },
         {
-            &quot;url&quot;: &quot;http://localhost/api/restaurants/17/reviews?page=1&quot;,
+            &quot;url&quot;: &quot;http://localhost:8080/api/restaurants/17/reviews?page=1&quot;,
             &quot;label&quot;: &quot;1&quot;,
             &quot;page&quot;: 1,
             &quot;active&quot;: true
@@ -2296,7 +2301,7 @@ vary: Origin
         }
     ],
     &quot;next_page_url&quot;: null,
-    &quot;path&quot;: &quot;http://localhost/api/restaurants/17/reviews&quot;,
+    &quot;path&quot;: &quot;http://localhost:8080/api/restaurants/17/reviews&quot;,
     &quot;per_page&quot;: 10,
     &quot;prev_page_url&quot;: null,
     &quot;to&quot;: null,
@@ -2777,10 +2782,10 @@ vary: Origin
 <code class="language-json" style="max-height: 300px;">{
     &quot;current_page&quot;: 1,
     &quot;data&quot;: [],
-    &quot;first_page_url&quot;: &quot;http://localhost/api/food-items/17/reviews?page=1&quot;,
+    &quot;first_page_url&quot;: &quot;http://localhost:8080/api/food-items/17/reviews?page=1&quot;,
     &quot;from&quot;: null,
     &quot;last_page&quot;: 1,
-    &quot;last_page_url&quot;: &quot;http://localhost/api/food-items/17/reviews?page=1&quot;,
+    &quot;last_page_url&quot;: &quot;http://localhost:8080/api/food-items/17/reviews?page=1&quot;,
     &quot;links&quot;: [
         {
             &quot;url&quot;: null,
@@ -2789,7 +2794,7 @@ vary: Origin
             &quot;active&quot;: false
         },
         {
-            &quot;url&quot;: &quot;http://localhost/api/food-items/17/reviews?page=1&quot;,
+            &quot;url&quot;: &quot;http://localhost:8080/api/food-items/17/reviews?page=1&quot;,
             &quot;label&quot;: &quot;1&quot;,
             &quot;page&quot;: 1,
             &quot;active&quot;: true
@@ -2802,7 +2807,7 @@ vary: Origin
         }
     ],
     &quot;next_page_url&quot;: null,
-    &quot;path&quot;: &quot;http://localhost/api/food-items/17/reviews&quot;,
+    &quot;path&quot;: &quot;http://localhost:8080/api/food-items/17/reviews&quot;,
     &quot;per_page&quot;: 10,
     &quot;prev_page_url&quot;: null,
     &quot;to&quot;: null,
@@ -4262,10 +4267,10 @@ vary: Origin
 <code class="language-json" style="max-height: 300px;">{
     &quot;current_page&quot;: 1,
     &quot;data&quot;: [],
-    &quot;first_page_url&quot;: &quot;http://localhost/api/news?page=1&quot;,
+    &quot;first_page_url&quot;: &quot;http://localhost:8080/api/news?page=1&quot;,
     &quot;from&quot;: null,
     &quot;last_page&quot;: 1,
-    &quot;last_page_url&quot;: &quot;http://localhost/api/news?page=1&quot;,
+    &quot;last_page_url&quot;: &quot;http://localhost:8080/api/news?page=1&quot;,
     &quot;links&quot;: [
         {
             &quot;url&quot;: null,
@@ -4274,7 +4279,7 @@ vary: Origin
             &quot;active&quot;: false
         },
         {
-            &quot;url&quot;: &quot;http://localhost/api/news?page=1&quot;,
+            &quot;url&quot;: &quot;http://localhost:8080/api/news?page=1&quot;,
             &quot;label&quot;: &quot;1&quot;,
             &quot;page&quot;: 1,
             &quot;active&quot;: true
@@ -4287,7 +4292,7 @@ vary: Origin
         }
     ],
     &quot;next_page_url&quot;: null,
-    &quot;path&quot;: &quot;http://localhost/api/news&quot;,
+    &quot;path&quot;: &quot;http://localhost:8080/api/news&quot;,
     &quot;per_page&quot;: 15,
     &quot;prev_page_url&quot;: null,
     &quot;to&quot;: null,
@@ -4419,10 +4424,10 @@ vary: Origin
 <code class="language-json" style="max-height: 300px;">{
     &quot;current_page&quot;: 1,
     &quot;data&quot;: [],
-    &quot;first_page_url&quot;: &quot;http://localhost/api/news/by-type/consequatur?page=1&quot;,
+    &quot;first_page_url&quot;: &quot;http://localhost:8080/api/news/by-type/consequatur?page=1&quot;,
     &quot;from&quot;: null,
     &quot;last_page&quot;: 1,
-    &quot;last_page_url&quot;: &quot;http://localhost/api/news/by-type/consequatur?page=1&quot;,
+    &quot;last_page_url&quot;: &quot;http://localhost:8080/api/news/by-type/consequatur?page=1&quot;,
     &quot;links&quot;: [
         {
             &quot;url&quot;: null,
@@ -4431,7 +4436,7 @@ vary: Origin
             &quot;active&quot;: false
         },
         {
-            &quot;url&quot;: &quot;http://localhost/api/news/by-type/consequatur?page=1&quot;,
+            &quot;url&quot;: &quot;http://localhost:8080/api/news/by-type/consequatur?page=1&quot;,
             &quot;label&quot;: &quot;1&quot;,
             &quot;page&quot;: 1,
             &quot;active&quot;: true
@@ -4444,7 +4449,7 @@ vary: Origin
         }
     ],
     &quot;next_page_url&quot;: null,
-    &quot;path&quot;: &quot;http://localhost/api/news/by-type/consequatur&quot;,
+    &quot;path&quot;: &quot;http://localhost:8080/api/news/by-type/consequatur&quot;,
     &quot;per_page&quot;: 15,
     &quot;prev_page_url&quot;: null,
     &quot;to&quot;: null,
@@ -4709,7 +4714,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
     \"course_duration\": 17,
     \"max_participants\": 17,
     \"status\": \"published\",
-    \"published_at\": \"2026-01-27T09:27:31\"
+    \"published_at\": \"2026-01-27T10:26:34\"
 }"
 </code></pre></div>
 
@@ -4740,7 +4745,7 @@ let body = {
     "course_duration": 17,
     "max_participants": 17,
     "status": "published",
-    "published_at": "2026-01-27T09:27:31"
+    "published_at": "2026-01-27T10:26:34"
 };
 
 fetch(url, {
@@ -5028,10 +5033,10 @@ Must be one of:
  &nbsp;
                 <input type="text" style="display: none"
                               name="published_at"                data-endpoint="POSTapi-news"
-               value="2026-01-27T09:27:31"
+               value="2026-01-27T10:26:34"
                data-component="body">
     <br>
-<p>Must be a valid date. Example: <code>2026-01-27T09:27:31</code></p>
+<p>Must be a valid date. Example: <code>2026-01-27T10:26:34</code></p>
         </div>
         </form>
 
@@ -5052,11 +5057,11 @@ Must be one of:
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
-    \"type\": \"news\",
+    \"type\": \"chef\",
     \"featured_image\": \"consequatur\",
     \"video_link\": \"consequatur\",
-    \"status\": \"published\",
-    \"published_at\": \"2026-01-27T09:27:31\"
+    \"status\": \"draft\",
+    \"published_at\": \"2026-01-27T10:26:34\"
 }"
 </code></pre></div>
 
@@ -5072,11 +5077,11 @@ const headers = {
 };
 
 let body = {
-    "type": "news",
+    "type": "chef",
     "featured_image": "consequatur",
     "video_link": "consequatur",
-    "status": "published",
-    "published_at": "2026-01-27T09:27:31"
+    "status": "draft",
+    "published_at": "2026-01-27T10:26:34"
 };
 
 fetch(url, {
@@ -5181,10 +5186,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="type"                data-endpoint="PUTapi-news--id-"
-               value="news"
+               value="chef"
                data-component="body">
     <br>
-<p>Example: <code>news</code></p>
+<p>Example: <code>chef</code></p>
 Must be one of:
 <ul style="list-style-type: square;"><li><code>news</code></li> <li><code>course</code></li> <li><code>chef</code></li></ul>
         </div>
@@ -5279,10 +5284,10 @@ Must be one of:
  &nbsp;
                 <input type="text" style="display: none"
                               name="status"                data-endpoint="PUTapi-news--id-"
-               value="published"
+               value="draft"
                data-component="body">
     <br>
-<p>Example: <code>published</code></p>
+<p>Example: <code>draft</code></p>
 Must be one of:
 <ul style="list-style-type: square;"><li><code>published</code></li> <li><code>draft</code></li> <li><code>archived</code></li></ul>
         </div>
@@ -5293,10 +5298,10 @@ Must be one of:
  &nbsp;
                 <input type="text" style="display: none"
                               name="published_at"                data-endpoint="PUTapi-news--id-"
-               value="2026-01-27T09:27:31"
+               value="2026-01-27T10:26:34"
                data-component="body">
     <br>
-<p>Must be a valid date. Example: <code>2026-01-27T09:27:31</code></p>
+<p>Must be a valid date. Example: <code>2026-01-27T10:26:34</code></p>
         </div>
         </form>
 
@@ -6110,7 +6115,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
     "http://localhost:8080/api/upload/images" \
     --header "Content-Type: multipart/form-data" \
     --header "Accept: application/json" \
-    --form "images[]=@/tmp/phpjp0J8X" </code></pre></div>
+    --form "images[]=@/tmp/phpls2GLC" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -6240,8 +6245,8 @@ You can check the Dev Tools console for debugging information.</code></pre>
     "http://localhost:8080/api/upload/restaurant-images" \
     --header "Content-Type: multipart/form-data" \
     --header "Accept: application/json" \
-    --form "outside_images[]=@/tmp/phpl8mQeP" \
-    --form "inside_images[]=@/tmp/php0mrPnx" </code></pre></div>
+    --form "outside_images[]=@/tmp/phpeVDsWq" \
+    --form "inside_images[]=@/tmp/phpnSb13b" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -6386,8 +6391,8 @@ You can check the Dev Tools console for debugging information.</code></pre>
     "http://localhost:8080/api/upload/food-images" \
     --header "Content-Type: multipart/form-data" \
     --header "Accept: application/json" \
-    --form "main_image=@/tmp/phpL0Kgoc" \
-    --form "extra_images[]=@/tmp/phpCrec1f" </code></pre></div>
+    --form "main_image=@/tmp/php28mCFj" \
+    --form "extra_images[]=@/tmp/phpZgmMq6" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -6496,7 +6501,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>Must be an image. Must not be greater than 5120 kilobytes. Example: <code>/tmp/phpL0Kgoc</code></p>
+<p>Must be an image. Must not be greater than 5120 kilobytes. Example: <code>/tmp/php28mCFj</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>extra_images</code></b>&nbsp;&nbsp;
@@ -6796,7 +6801,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
-    \"status\": \"active\"
+    \"status\": \"pending\"
 }"
 </code></pre></div>
 
@@ -6812,7 +6817,7 @@ const headers = {
 };
 
 let body = {
-    "status": "active"
+    "status": "pending"
 };
 
 fetch(url, {
@@ -6917,10 +6922,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="status"                data-endpoint="PUTapi-admin-restaurants--id--status"
-               value="active"
+               value="pending"
                data-component="body">
     <br>
-<p>Example: <code>active</code></p>
+<p>Example: <code>pending</code></p>
 Must be one of:
 <ul style="list-style-type: square;"><li><code>active</code></li> <li><code>hidden</code></li> <li><code>pending</code></li></ul>
         </div>
@@ -6943,7 +6948,7 @@ Must be one of:
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
-    \"status\": \"active\"
+    \"status\": \"hidden\"
 }"
 </code></pre></div>
 
@@ -6959,7 +6964,7 @@ const headers = {
 };
 
 let body = {
-    "status": "active"
+    "status": "hidden"
 };
 
 fetch(url, {
@@ -7064,10 +7069,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="status"                data-endpoint="PUTapi-admin-food-items--id--status"
-               value="active"
+               value="hidden"
                data-component="body">
     <br>
-<p>Example: <code>active</code></p>
+<p>Example: <code>hidden</code></p>
 Must be one of:
 <ul style="list-style-type: square;"><li><code>active</code></li> <li><code>hidden</code></li> <li><code>pending</code></li></ul>
         </div>
@@ -7449,10 +7454,10 @@ vary: Origin
 <code class="language-json" style="max-height: 300px;">{
     &quot;current_page&quot;: 1,
     &quot;data&quot;: [],
-    &quot;first_page_url&quot;: &quot;http://localhost/api/food-items?page=1&quot;,
+    &quot;first_page_url&quot;: &quot;http://localhost:8080/api/food-items?page=1&quot;,
     &quot;from&quot;: null,
     &quot;last_page&quot;: 1,
-    &quot;last_page_url&quot;: &quot;http://localhost/api/food-items?page=1&quot;,
+    &quot;last_page_url&quot;: &quot;http://localhost:8080/api/food-items?page=1&quot;,
     &quot;links&quot;: [
         {
             &quot;url&quot;: null,
@@ -7461,7 +7466,7 @@ vary: Origin
             &quot;active&quot;: false
         },
         {
-            &quot;url&quot;: &quot;http://localhost/api/food-items?page=1&quot;,
+            &quot;url&quot;: &quot;http://localhost:8080/api/food-items?page=1&quot;,
             &quot;label&quot;: &quot;1&quot;,
             &quot;page&quot;: 1,
             &quot;active&quot;: true
@@ -7474,7 +7479,7 @@ vary: Origin
         }
     ],
     &quot;next_page_url&quot;: null,
-    &quot;path&quot;: &quot;http://localhost/api/food-items&quot;,
+    &quot;path&quot;: &quot;http://localhost:8080/api/food-items&quot;,
     &quot;per_page&quot;: 15,
     &quot;prev_page_url&quot;: null,
     &quot;to&quot;: null,
@@ -7679,10 +7684,10 @@ vary: Origin
 <code class="language-json" style="max-height: 300px;">{
     &quot;current_page&quot;: 1,
     &quot;data&quot;: [],
-    &quot;first_page_url&quot;: &quot;http://localhost/api/food-items/search?page=1&quot;,
+    &quot;first_page_url&quot;: &quot;http://localhost:8080/api/food-items/search?page=1&quot;,
     &quot;from&quot;: null,
     &quot;last_page&quot;: 1,
-    &quot;last_page_url&quot;: &quot;http://localhost/api/food-items/search?page=1&quot;,
+    &quot;last_page_url&quot;: &quot;http://localhost:8080/api/food-items/search?page=1&quot;,
     &quot;links&quot;: [
         {
             &quot;url&quot;: null,
@@ -7691,7 +7696,7 @@ vary: Origin
             &quot;active&quot;: false
         },
         {
-            &quot;url&quot;: &quot;http://localhost/api/food-items/search?page=1&quot;,
+            &quot;url&quot;: &quot;http://localhost:8080/api/food-items/search?page=1&quot;,
             &quot;label&quot;: &quot;1&quot;,
             &quot;page&quot;: 1,
             &quot;active&quot;: true
@@ -7704,7 +7709,7 @@ vary: Origin
         }
     ],
     &quot;next_page_url&quot;: null,
-    &quot;path&quot;: &quot;http://localhost/api/food-items/search&quot;,
+    &quot;path&quot;: &quot;http://localhost:8080/api/food-items/search&quot;,
     &quot;per_page&quot;: 15,
     &quot;prev_page_url&quot;: null,
     &quot;to&quot;: null,
@@ -7836,10 +7841,10 @@ vary: Origin
 <code class="language-json" style="max-height: 300px;">{
     &quot;current_page&quot;: 1,
     &quot;data&quot;: [],
-    &quot;first_page_url&quot;: &quot;http://localhost/api/food-items/by-category/consequatur?page=1&quot;,
+    &quot;first_page_url&quot;: &quot;http://localhost:8080/api/food-items/by-category/consequatur?page=1&quot;,
     &quot;from&quot;: null,
     &quot;last_page&quot;: 1,
-    &quot;last_page_url&quot;: &quot;http://localhost/api/food-items/by-category/consequatur?page=1&quot;,
+    &quot;last_page_url&quot;: &quot;http://localhost:8080/api/food-items/by-category/consequatur?page=1&quot;,
     &quot;links&quot;: [
         {
             &quot;url&quot;: null,
@@ -7848,7 +7853,7 @@ vary: Origin
             &quot;active&quot;: false
         },
         {
-            &quot;url&quot;: &quot;http://localhost/api/food-items/by-category/consequatur?page=1&quot;,
+            &quot;url&quot;: &quot;http://localhost:8080/api/food-items/by-category/consequatur?page=1&quot;,
             &quot;label&quot;: &quot;1&quot;,
             &quot;page&quot;: 1,
             &quot;active&quot;: true
@@ -7861,7 +7866,7 @@ vary: Origin
         }
     ],
     &quot;next_page_url&quot;: null,
-    &quot;path&quot;: &quot;http://localhost/api/food-items/by-category/consequatur&quot;,
+    &quot;path&quot;: &quot;http://localhost:8080/api/food-items/by-category/consequatur&quot;,
     &quot;per_page&quot;: 15,
     &quot;prev_page_url&quot;: null,
     &quot;to&quot;: null,
@@ -8006,10 +8011,10 @@ vary: Origin
 <code class="language-json" style="max-height: 300px;">{
     &quot;current_page&quot;: 1,
     &quot;data&quot;: [],
-    &quot;first_page_url&quot;: &quot;http://localhost/api/food-items/best-seller?page=1&quot;,
+    &quot;first_page_url&quot;: &quot;http://localhost:8080/api/food-items/best-seller?page=1&quot;,
     &quot;from&quot;: null,
     &quot;last_page&quot;: 1,
-    &quot;last_page_url&quot;: &quot;http://localhost/api/food-items/best-seller?page=1&quot;,
+    &quot;last_page_url&quot;: &quot;http://localhost:8080/api/food-items/best-seller?page=1&quot;,
     &quot;links&quot;: [
         {
             &quot;url&quot;: null,
@@ -8018,7 +8023,7 @@ vary: Origin
             &quot;active&quot;: false
         },
         {
-            &quot;url&quot;: &quot;http://localhost/api/food-items/best-seller?page=1&quot;,
+            &quot;url&quot;: &quot;http://localhost:8080/api/food-items/best-seller?page=1&quot;,
             &quot;label&quot;: &quot;1&quot;,
             &quot;page&quot;: 1,
             &quot;active&quot;: true
@@ -8031,7 +8036,7 @@ vary: Origin
         }
     ],
     &quot;next_page_url&quot;: null,
-    &quot;path&quot;: &quot;http://localhost/api/food-items/best-seller&quot;,
+    &quot;path&quot;: &quot;http://localhost:8080/api/food-items/best-seller&quot;,
     &quot;per_page&quot;: 15,
     &quot;prev_page_url&quot;: null,
     &quot;to&quot;: null,
@@ -8278,7 +8283,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
     \"currency_code\": \"qeopf\",
     \"serving_size\": 17,
     \"weight\": 17,
-    \"is_vegetarian\": true
+    \"is_vegetarian\": false
 }"
 </code></pre></div>
 
@@ -8304,7 +8309,7 @@ let body = {
     "currency_code": "qeopf",
     "serving_size": 17,
     "weight": 17,
-    "is_vegetarian": true
+    "is_vegetarian": false
 };
 
 fetch(url, {
@@ -8541,7 +8546,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
             <code>false</code>
         </label>
     <br>
-<p>Example: <code>true</code></p>
+<p>Example: <code>false</code></p>
         </div>
         </form>
 
@@ -9239,10 +9244,10 @@ vary: Origin
 <code class="language-json" style="max-height: 300px;">{
     &quot;current_page&quot;: 1,
     &quot;data&quot;: [],
-    &quot;first_page_url&quot;: &quot;http://localhost/api/search/food-items?page=1&quot;,
+    &quot;first_page_url&quot;: &quot;http://localhost:8080/api/search/food-items?page=1&quot;,
     &quot;from&quot;: null,
     &quot;last_page&quot;: 1,
-    &quot;last_page_url&quot;: &quot;http://localhost/api/search/food-items?page=1&quot;,
+    &quot;last_page_url&quot;: &quot;http://localhost:8080/api/search/food-items?page=1&quot;,
     &quot;links&quot;: [
         {
             &quot;url&quot;: null,
@@ -9251,7 +9256,7 @@ vary: Origin
             &quot;active&quot;: false
         },
         {
-            &quot;url&quot;: &quot;http://localhost/api/search/food-items?page=1&quot;,
+            &quot;url&quot;: &quot;http://localhost:8080/api/search/food-items?page=1&quot;,
             &quot;label&quot;: &quot;1&quot;,
             &quot;page&quot;: 1,
             &quot;active&quot;: true
@@ -9264,7 +9269,7 @@ vary: Origin
         }
     ],
     &quot;next_page_url&quot;: null,
-    &quot;path&quot;: &quot;http://localhost/api/search/food-items&quot;,
+    &quot;path&quot;: &quot;http://localhost:8080/api/search/food-items&quot;,
     &quot;per_page&quot;: 15,
     &quot;prev_page_url&quot;: null,
     &quot;to&quot;: null,
@@ -9536,10 +9541,10 @@ vary: Origin
 <code class="language-json" style="max-height: 300px;">{
     &quot;current_page&quot;: 1,
     &quot;data&quot;: [],
-    &quot;first_page_url&quot;: &quot;http://localhost/api/restaurants?page=1&quot;,
+    &quot;first_page_url&quot;: &quot;http://localhost:8080/api/restaurants?page=1&quot;,
     &quot;from&quot;: null,
     &quot;last_page&quot;: 1,
-    &quot;last_page_url&quot;: &quot;http://localhost/api/restaurants?page=1&quot;,
+    &quot;last_page_url&quot;: &quot;http://localhost:8080/api/restaurants?page=1&quot;,
     &quot;links&quot;: [
         {
             &quot;url&quot;: null,
@@ -9548,7 +9553,7 @@ vary: Origin
             &quot;active&quot;: false
         },
         {
-            &quot;url&quot;: &quot;http://localhost/api/restaurants?page=1&quot;,
+            &quot;url&quot;: &quot;http://localhost:8080/api/restaurants?page=1&quot;,
             &quot;label&quot;: &quot;1&quot;,
             &quot;page&quot;: 1,
             &quot;active&quot;: true
@@ -9561,7 +9566,7 @@ vary: Origin
         }
     ],
     &quot;next_page_url&quot;: null,
-    &quot;path&quot;: &quot;http://localhost/api/restaurants&quot;,
+    &quot;path&quot;: &quot;http://localhost:8080/api/restaurants&quot;,
     &quot;per_page&quot;: 15,
     &quot;prev_page_url&quot;: null,
     &quot;to&quot;: null,
@@ -9754,10 +9759,10 @@ vary: Origin
 <code class="language-json" style="max-height: 300px;">{
     &quot;current_page&quot;: 1,
     &quot;data&quot;: [],
-    &quot;first_page_url&quot;: &quot;http://localhost/api/restaurants/search?page=1&quot;,
+    &quot;first_page_url&quot;: &quot;http://localhost:8080/api/restaurants/search?page=1&quot;,
     &quot;from&quot;: null,
     &quot;last_page&quot;: 1,
-    &quot;last_page_url&quot;: &quot;http://localhost/api/restaurants/search?page=1&quot;,
+    &quot;last_page_url&quot;: &quot;http://localhost:8080/api/restaurants/search?page=1&quot;,
     &quot;links&quot;: [
         {
             &quot;url&quot;: null,
@@ -9766,7 +9771,7 @@ vary: Origin
             &quot;active&quot;: false
         },
         {
-            &quot;url&quot;: &quot;http://localhost/api/restaurants/search?page=1&quot;,
+            &quot;url&quot;: &quot;http://localhost:8080/api/restaurants/search?page=1&quot;,
             &quot;label&quot;: &quot;1&quot;,
             &quot;page&quot;: 1,
             &quot;active&quot;: true
@@ -9779,7 +9784,7 @@ vary: Origin
         }
     ],
     &quot;next_page_url&quot;: null,
-    &quot;path&quot;: &quot;http://localhost/api/restaurants/search&quot;,
+    &quot;path&quot;: &quot;http://localhost:8080/api/restaurants/search&quot;,
     &quot;per_page&quot;: 15,
     &quot;prev_page_url&quot;: null,
     &quot;to&quot;: null,
@@ -10517,7 +10522,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
     \"phone\": \"mqeopfuudtdsufvyv\",
     \"zalo\": \"ddqamniihfqcoynlazghd\",
     \"email\": \"tnitzsche@example.org\",
-    \"delivery_available\": false
+    \"delivery_available\": true
 }"
 </code></pre></div>
 
@@ -10538,7 +10543,7 @@ let body = {
     "phone": "mqeopfuudtdsufvyv",
     "zalo": "ddqamniihfqcoynlazghd",
     "email": "tnitzsche@example.org",
-    "delivery_available": false
+    "delivery_available": true
 };
 
 fetch(url, {
@@ -10740,7 +10745,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
             <code>false</code>
         </label>
     <br>
-<p>Example: <code>false</code></p>
+<p>Example: <code>true</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>remark</code></b>&nbsp;&nbsp;
@@ -10930,10 +10935,10 @@ vary: Origin
 <code class="language-json" style="max-height: 300px;">{
     &quot;current_page&quot;: 1,
     &quot;data&quot;: [],
-    &quot;first_page_url&quot;: &quot;http://localhost/api/search/restaurants?page=1&quot;,
+    &quot;first_page_url&quot;: &quot;http://localhost:8080/api/search/restaurants?page=1&quot;,
     &quot;from&quot;: null,
     &quot;last_page&quot;: 1,
-    &quot;last_page_url&quot;: &quot;http://localhost/api/search/restaurants?page=1&quot;,
+    &quot;last_page_url&quot;: &quot;http://localhost:8080/api/search/restaurants?page=1&quot;,
     &quot;links&quot;: [
         {
             &quot;url&quot;: null,
@@ -10942,7 +10947,7 @@ vary: Origin
             &quot;active&quot;: false
         },
         {
-            &quot;url&quot;: &quot;http://localhost/api/search/restaurants?page=1&quot;,
+            &quot;url&quot;: &quot;http://localhost:8080/api/search/restaurants?page=1&quot;,
             &quot;label&quot;: &quot;1&quot;,
             &quot;page&quot;: 1,
             &quot;active&quot;: true
@@ -10955,7 +10960,7 @@ vary: Origin
         }
     ],
     &quot;next_page_url&quot;: null,
-    &quot;path&quot;: &quot;http://localhost/api/search/restaurants&quot;,
+    &quot;path&quot;: &quot;http://localhost:8080/api/search/restaurants&quot;,
     &quot;per_page&quot;: 15,
     &quot;prev_page_url&quot;: null,
     &quot;to&quot;: null,

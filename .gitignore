@@ -67,3 +67,4 @@ Icon
 .Trashes
 ehthumbs.db
 Thumbs.db
+/resources/views/scribe/index.blade.php
