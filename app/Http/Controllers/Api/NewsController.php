@@ -6,8 +6,20 @@ use App\Http\Controllers\Controller;
 use App\Models\News;
 use Illuminate\Http\Request;
 
+/**
+ * @group Endpoints
+ */
 class NewsController extends Controller
 {
+    /**
+     * GET api/news
+     * 
+     * Get list of published news/articles
+     * 
+     * @queryParam type string Filter by type (news, course, chef). Example: news
+     * @queryParam search string Search by title. Example: pizza
+     * @queryParam per_page integer Items per page. Example: 15
+     */
     public function index(Request $request)
     {
         $query = News::with(['category'])->published();
@@ -33,6 +45,13 @@ class NewsController extends Controller
         return response()->json($news);
     }
 
+    /**
+     * GET api/news/by-type/{type}
+     * 
+     * Get news/articles by type
+     * 
+     * @urlParam type string required The type of news (news, course, chef). Example: consequatur
+     */
     public function getByType($type)
     {
         $news = News::with(['category'])
@@ -44,6 +63,13 @@ class NewsController extends Controller
         return response()->json($news);
     }
 
+    /**
+     * GET api/news/{id}
+     * 
+     * Get news/article details by ID
+     * 
+     * @urlParam id integer required The ID of the news. Example: 17
+     */
     public function show($id)
     {
         $news = News::with(['category'])->findOrFail($id);

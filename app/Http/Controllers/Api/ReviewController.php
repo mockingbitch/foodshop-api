@@ -8,8 +8,18 @@ use App\Models\Restaurant;
 use App\Models\FoodItem;
 use Illuminate\Http\Request;
 
+/**
+ * @group Endpoints
+ */
 class ReviewController extends Controller
 {
+    /**
+     * GET api/food-items/{foodItemId}/reviews
+     * 
+     * Get reviews for a food item
+     * 
+     * @urlParam foodItemId integer required The ID of the food item. Example: 17
+     */
     public function getReviews($foodItemId)
     {
         $reviews = Review::where('reviewable_type', FoodItem::class)
@@ -48,6 +58,13 @@ class ReviewController extends Controller
         ], 201);
     }
 
+    /**
+     * GET api/restaurants/{restaurantId}/reviews
+     * 
+     * Get reviews for a restaurant
+     * 
+     * @urlParam restaurantId integer required The ID of the restaurant. Example: 17
+     */
     public function getRestaurantReviews($restaurantId)
     {
         $reviews = Review::where('reviewable_type', Restaurant::class)

@@ -7,8 +7,19 @@ use App\Models\FoodCategory;
 use App\Models\FoodCategoryTranslation;
 use Illuminate\Http\Request;
 
+/**
+ * @group Endpoints
+ */
 class FoodCategoryController extends Controller
 {
+    /**
+     * GET api/food-categories
+     * 
+     * Get list of food categories
+     * 
+     * @queryParam root_only boolean Filter root categories only. Example: true
+     * @queryParam parent_id integer Filter by parent category ID. Example: 1
+     */
     public function index(Request $request)
     {
         $query = FoodCategory::with(['translations', 'parent', 'children'])
@@ -29,6 +40,14 @@ class FoodCategoryController extends Controller
         return response()->json($categories);
     }
 
+    /**
+     * GET api/food-categories/{id}
+     * 
+     * Get food category details by ID
+     * 
+     * @urlParam id integer required The ID of the food category. Example: 17
+     * @queryParam lang string Language code for translation. Example: en
+     */
     public function show($id, Request $request)
     {
         $category = FoodCategory::with(['translations', 'parent', 'children'])

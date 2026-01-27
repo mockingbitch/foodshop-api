@@ -6,8 +6,19 @@ use App\Http\Controllers\Controller;
 use App\Models\Restaurant;
 use Illuminate\Http\Request;
 
+/**
+ * @group Endpoints
+ */
 class AdminRestaurantController extends Controller
 {
+    /**
+     * GET api/admin/restaurants
+     * 
+     * Get list of all restaurants (Admin only)
+     * 
+     * @queryParam status string Filter by status (active, hidden, pending). Example: active
+     * @queryParam per_page integer Items per page. Example: 15
+     */
     public function index(Request $request)
     {
         $query = Restaurant::with(['country', 'restaurantType', 'user']);
@@ -37,6 +48,13 @@ class AdminRestaurantController extends Controller
         ]);
     }
 
+    /**
+     * GET api/admin/restaurants/{restaurantId}/food-items
+     * 
+     * Get food items for a restaurant (Admin only)
+     * 
+     * @urlParam restaurantId integer required The ID of the restaurant. Example: 17
+     */
     public function getRestaurantFoodItems($restaurantId)
     {
         $restaurant = Restaurant::with(['foodItems.foodCategory'])->findOrFail($restaurantId);
