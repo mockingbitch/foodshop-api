@@ -15,31 +15,29 @@ return [
     'description' => 'API documentation for FoodShop Backend System - Restaurant and Food Management Platform',
 
     // Text to place in the "Introduction" section, right after the `description`. Markdown and HTML are supported.
-    'intro_text' => <<<INTRO
-        This documentation aims to provide all the information you need to work with our FoodShop API.
+    'intro_text' => 'This documentation aims to provide all the information you need to work with our FoodShop API.
 
-        ## Base URL
-        All API requests should be made to: `http://localhost:8080/api`
-        
-        **Note**: Routes already include the `/api` prefix, so endpoints are accessed as `http://localhost:8080/api/{endpoint}`
+## Base URL
+All API requests should be made to: `' . config('app.url') . '/api`
 
-        ## Authentication
-        Most endpoints require authentication using Bearer tokens. You can obtain a token by logging in through the authentication endpoints.
+**Note**: Routes already include the `/api` prefix, so endpoints are accessed as `' . config('app.url') . '/api/{endpoint}`
 
-        ### Getting Started
-        1. Register a restaurant owner account or login as admin
-        2. Copy the `access_token` from the response
-        3. Include it in the Authorization header: `Bearer {your-token}`
+## Authentication
+Most endpoints require authentication using Bearer tokens. You can obtain a token by logging in through the authentication endpoints.
 
-        <aside>As you scroll, you'll see code examples for working with the API in different programming languages in the dark area to the right (or as part of the content on mobile).
-        You can switch the language used with the tabs at the top right (or from the nav menu at the top left on mobile).</aside>
-    INTRO,
+### Getting Started
+1. Register a restaurant owner account or login as admin
+2. Copy the `access_token` from the response
+3. Include it in the Authorization header: `Bearer {your-token}`
+
+<aside>As you scroll, you\'ll see code examples for working with the API in different programming languages in the dark area to the right (or as part of the content on mobile).
+You can switch the language used with the tabs at the top right (or from the nav menu at the top left on mobile).</aside>',
 
     // The base URL displayed in the docs.
     // If you're using `laravel` type, you can set this to a dynamic string, like '{{ config("app.tenant_url") }}' to get a dynamic base URL.
     // Note: Routes already have 'api' prefix from RouteServiceProvider, so base_url should NOT include /api
     // Scribe will automatically append the route path (which already includes 'api') to this base_url
-    'base_url' => 'http://localhost:8080',
+    'base_url' => config('app.url'),
 
     // Routes to include in the docs
     'routes' => [
@@ -116,7 +114,7 @@ return [
 
         // The base URL to use in the API tester. This should match your actual API URL.
         // Note: Routes already have 'api' prefix, so base_url should NOT include /api to avoid duplicate
-        'base_url' => 'http://localhost:8080',
+        'base_url' => config('app.url'),
 
         // [Laravel Sanctum] Fetch a CSRF token before each request, and add it as an X-XSRF-TOKEN header.
         'use_csrf' => false,
