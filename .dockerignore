@@ -12,6 +12,8 @@ PROJECT_ANALYSIS.md
 SECURITY.md
 SWAGGER_*.md
 MAKEFILE_GUIDE.md
+EC2_*.md
+DOCKER_*.md
 
 # IDE
 .idea
