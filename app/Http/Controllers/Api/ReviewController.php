@@ -2,104 +2,59 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Models\Review;
-use App\Models\Restaurant;
-use App\Models\FoodItem;
-use Illuminate\Http\Request;
+use App\Http\Controllers\Api\BaseApiController;
+use App\Http\Requests\Review\StoreReviewRequest;
+use App\Services\ReviewService;
+use Illuminate\Http\JsonResponse;
 
 /**
- * @group Endpoints
+ * Reviews for food items and restaurants. List approved; create sets status pending.
+ *
+ * @group Reviews
  */
-class ReviewController extends Controller
+class ReviewController extends BaseApiController
 {
+    public function __construct(
+        protected ReviewService $reviewService
+    ) {}
+
     /**
-     * GET api/food-items/{foodItemId}/reviews
-     * 
      * Get reviews for a food item
-     * 
-     * @urlParam foodItemId integer required The ID of the food item. Example: 17
      */
-    public function getReviews($foodItemId)
+    public function getReviews(int $foodItemId): JsonResponse
     {
-        $reviews = Review::where('reviewable_type', FoodItem::class)
-            ->where('reviewable_id', $foodItemId)
-            ->approved()
-            ->latest()
-            ->paginate(10);
+        $reviews = $this->reviewService->getReviews($foodItemId);
 
-        return response()->json($reviews);
-    }
-
-    public function storeReview(Request $request, $foodItemId)
-    {
-        $request->validate([
-            'reviewer_name' => 'required|string|max:100',
-            'reviewer_email' => 'nullable|email|max:100',
-            'rating' => 'required|integer|min:1|max:5',
-            'comment' => 'nullable|string',
-            'images' => 'nullable|array|max:5',
-        ]);
-
-        $foodItem = FoodItem::findOrFail($foodItemId);
-
-        $review = $foodItem->reviews()->create([
-            'reviewer_name' => $request->reviewer_name,
-            'reviewer_email' => $request->reviewer_email,
-            'rating' => $request->rating,
-            'comment' => $request->comment,
-            'images' => $request->images,
-            'status' => 'pending', // Requires admin approval
-        ]);
-
-        return response()->json([
-            'message' => 'Review submitted successfully. Awaiting approval.',
-            'review' => $review,
-        ], 201);
+        return $this->success($reviews);
     }
 
     /**
-     * GET api/restaurants/{restaurantId}/reviews
-     * 
-     * Get reviews for a restaurant
-     * 
-     * @urlParam restaurantId integer required The ID of the restaurant. Example: 17
+     * Create review for food item (public). Status pending until admin approval.
      */
-    public function getRestaurantReviews($restaurantId)
+    public function storeReview(StoreReviewRequest $request, int $foodItemId): JsonResponse
     {
-        $reviews = Review::where('reviewable_type', Restaurant::class)
-            ->where('reviewable_id', $restaurantId)
-            ->approved()
-            ->latest()
-            ->paginate(10);
+        $review = $this->reviewService->storeReview($foodItemId, $request->validated());
 
-        return response()->json($reviews);
+        return $this->created(['review' => $review], 'Review submitted successfully. Awaiting approval.');
     }
 
-    public function storeRestaurantReview(Request $request, $restaurantId)
+    /**
+     * Get reviews for a restaurant
+     */
+    public function getRestaurantReviews(int $restaurantId): JsonResponse
     {
-        $request->validate([
-            'reviewer_name' => 'required|string|max:100',
-            'reviewer_email' => 'nullable|email|max:100',
-            'rating' => 'required|integer|min:1|max:5',
-            'comment' => 'nullable|string',
-            'images' => 'nullable|array|max:5',
-        ]);
+        $reviews = $this->reviewService->getRestaurantReviews($restaurantId);
 
-        $restaurant = Restaurant::findOrFail($restaurantId);
+        return $this->success($reviews);
+    }
 
-        $review = $restaurant->reviews()->create([
-            'reviewer_name' => $request->reviewer_name,
-            'reviewer_email' => $request->reviewer_email,
-            'rating' => $request->rating,
-            'comment' => $request->comment,
-            'images' => $request->images,
-            'status' => 'pending',
-        ]);
+    /**
+     * Create review for restaurant (public). Status pending until admin approval.
+     */
+    public function storeRestaurantReview(StoreReviewRequest $request, int $restaurantId): JsonResponse
+    {
+        $review = $this->reviewService->storeRestaurantReview($restaurantId, $request->validated());
 
-        return response()->json([
-            'message' => 'Review submitted successfully. Awaiting approval.',
-            'review' => $review,
-        ], 201);
+        return $this->created(['review' => $review], 'Review submitted successfully. Awaiting approval.');
     }
 }

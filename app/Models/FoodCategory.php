@@ -8,6 +8,20 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * Food category model (hierarchical, multilingual via translations).
+ *
+ * @property int $id
+ * @property string $code
+ * @property int|null $parent_id
+ * @property string|null $image_1
+ * @property string|null $image_2
+ * @property string|null $image_3
+ * @property string|null $image_4
+ * @property string|null $image_5
+ * @property bool $is_active
+ * @property int $sort_order
+ */
 class FoodCategory extends Model
 {
     use HasFactory, SoftDeletes;
@@ -28,31 +42,49 @@ class FoodCategory extends Model
         'is_active' => 'boolean',
     ];
 
+    /**
+     * Get parent category.
+     */
     public function parent(): BelongsTo
     {
         return $this->belongsTo(FoodCategory::class, 'parent_id');
     }
 
+    /**
+     * Get child categories.
+     */
     public function children(): HasMany
     {
         return $this->hasMany(FoodCategory::class, 'parent_id');
     }
 
+    /**
+     * Get translations.
+     */
     public function translations(): HasMany
     {
         return $this->hasMany(FoodCategoryTranslation::class);
     }
 
+    /**
+     * Get food items in this category.
+     */
     public function foodItems(): HasMany
     {
         return $this->hasMany(FoodItem::class);
     }
 
+    /**
+     * Get translation for language code.
+     */
     public function getTranslation(string $languageCode)
     {
         return $this->translations()->where('language_code', $languageCode)->first();
     }
 
+    /**
+     * Get image URLs as array (image_1 to image_5, filtered).
+     */
     public function getImages(): array
     {
         return array_filter([
@@ -64,11 +96,17 @@ class FoodCategory extends Model
         ]);
     }
 
+    /**
+     * Scope: only active categories.
+     */
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
     }
 
+    /**
+     * Scope: root categories (no parent).
+     */
     public function scopeRootCategories($query)
     {
         return $query->whereNull('parent_id');

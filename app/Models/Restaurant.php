@@ -9,6 +9,27 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * Restaurant model.
+ *
+ * @property int $id
+ * @property string $code
+ * @property int $user_id
+ * @property int $country_id
+ * @property int $restaurant_type_id
+ * @property array $name Multilingual (en, vn, kr)
+ * @property array|null $description
+ * @property string $city
+ * @property string $address
+ * @property string $phone
+ * @property string|null $zalo
+ * @property string|null $email
+ * @property float|null $latitude
+ * @property float|null $longitude
+ * @property bool $delivery_available
+ * @property array|null $remark
+ * @property string $status active|hidden|pending
+ */
 class Restaurant extends Model
 {
     use HasFactory, SoftDeletes;
@@ -56,51 +77,81 @@ class Restaurant extends Model
         'rating' => 'decimal:2',
     ];
 
+    /**
+     * Get the owner user.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Get the country.
+     */
     public function country(): BelongsTo
     {
         return $this->belongsTo(Country::class);
     }
 
+    /**
+     * Get the restaurant type.
+     */
     public function restaurantType(): BelongsTo
     {
         return $this->belongsTo(RestaurantType::class);
     }
 
+    /**
+     * Get food items of this restaurant.
+     */
     public function foodItems(): HasMany
     {
         return $this->hasMany(FoodItem::class);
     }
 
+    /**
+     * Get menus of this restaurant.
+     */
     public function menus(): HasMany
     {
         return $this->hasMany(Menu::class);
     }
 
+    /**
+     * Get reviews (morphMany).
+     */
     public function reviews(): MorphMany
     {
         return $this->morphMany(Review::class, 'reviewable');
     }
 
+    /**
+     * Scope: only active restaurants.
+     */
     public function scopeActive($query)
     {
         return $query->where('status', 'active');
     }
 
+    /**
+     * Scope: only hidden restaurants.
+     */
     public function scopeHidden($query)
     {
         return $query->where('status', 'hidden');
     }
 
+    /**
+     * Scope: only pending restaurants.
+     */
     public function scopePending($query)
     {
         return $query->where('status', 'pending');
     }
 
+    /**
+     * Scope: restaurants within radius (km) of lat/long (Haversine).
+     */
     public function scopeNearby($query, $latitude, $longitude, $radiusInKm = 10)
     {
         // Haversine formula for distance calculation
@@ -116,11 +167,17 @@ class Restaurant extends Model
         ->orderBy('distance');
     }
 
+    /**
+     * Get name for given language code.
+     */
     public function getNameByLanguage(string $languageCode): string
     {
         return $this->name[$languageCode] ?? $this->name['en'] ?? '';
     }
 
+    /**
+     * Get outside images (max 2) as array.
+     */
     public function getOutsideImages(): array
     {
         return array_filter([
@@ -129,6 +186,9 @@ class Restaurant extends Model
         ]);
     }
 
+    /**
+     * Get inside images (max 5) as array.
+     */
     public function getInsideImages(): array
     {
         return array_filter([

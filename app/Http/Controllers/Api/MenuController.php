@@ -2,110 +2,71 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Models\Menu;
-use App\Models\Restaurant;
+use App\Http\Controllers\Api\BaseApiController;
+use App\Http\Requests\Menu\StoreMenuRequest;
+use App\Http\Requests\Menu\UpdateMenuRequest;
+use App\Services\MenuService;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 /**
- * @group Endpoints
+ * Restaurant menu CRUD. Owner creates/updates/deletes menus for own restaurant.
+ *
+ * @group Menus
  */
-class MenuController extends Controller
+class MenuController extends BaseApiController
 {
+    public function __construct(
+        protected MenuService $menuService
+    ) {}
+
     /**
-     * GET api/restaurants/{restaurantId}/menus
-     * 
      * Get list of menus for a restaurant
-     * 
-     * @urlParam restaurantId integer required The ID of the restaurant. Example: 17
      */
-    public function getMenus($restaurantId)
+    public function getMenus(int $restaurantId): JsonResponse
     {
-        $menus = Menu::where('restaurant_id', $restaurantId)
-            ->active()
-            ->orderBy('sort_order')
-            ->get();
+        $menus = $this->menuService->getMenus($restaurantId);
 
-        return response()->json($menus);
+        return $this->success($menus);
     }
 
     /**
-     * GET api/menus/{id}
-     * 
      * Get menu details by ID
-     * 
-     * @urlParam id integer required The ID of the menu. Example: 17
      */
-    public function show($id)
+    public function show(int $id): JsonResponse
     {
-        $menu = Menu::with(['restaurant'])->findOrFail($id);
+        $menu = $this->menuService->show($id);
 
-        return response()->json($menu);
+        return $this->success($menu);
     }
 
-    public function store(Request $request)
+    /**
+     * Create menu (owner for own restaurant).
+     */
+    public function store(StoreMenuRequest $request): JsonResponse
     {
-        $request->validate([
-            'restaurant_id' => 'required|exists:restaurants,id',
-            'name' => 'required|array',
-            'name.en' => 'required|string',
-            'description' => 'nullable|array',
-            'image' => 'nullable|string',
-            'sort_order' => 'integer',
-        ]);
+        $menu = $this->menuService->store($request->user(), $request->validated());
 
-        // Check if user owns the restaurant
-        $restaurant = Restaurant::findOrFail($request->restaurant_id);
-        if ($restaurant->user_id !== $request->user()->id && !$request->user()->isAdmin()) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
-
-        $menu = Menu::create($request->all());
-
-        return response()->json([
-            'message' => 'Menu created successfully',
-            'menu' => $menu,
-        ], 201);
+        return $this->created(['menu' => $menu], 'Menu created successfully');
     }
 
-    public function update(Request $request, $id)
+    /**
+     * Update menu (owner or admin).
+     */
+    public function update(UpdateMenuRequest $request, int $id): JsonResponse
     {
-        $menu = Menu::findOrFail($id);
+        $menu = $this->menuService->update($request->user(), $id, $request->validated());
 
-        // Check if user owns the restaurant
-        if ($menu->restaurant->user_id !== $request->user()->id && !$request->user()->isAdmin()) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
-
-        $request->validate([
-            'name' => 'sometimes|array',
-            'description' => 'nullable|array',
-            'image' => 'nullable|string',
-            'sort_order' => 'integer',
-            'is_active' => 'boolean',
-        ]);
-
-        $menu->update($request->all());
-
-        return response()->json([
-            'message' => 'Menu updated successfully',
-            'menu' => $menu,
-        ]);
+        return $this->success(['menu' => $menu], 'Menu updated successfully');
     }
 
-    public function destroy(Request $request, $id)
+    /**
+     * Delete menu (owner or admin).
+     */
+    public function destroy(Request $request, int $id): JsonResponse
     {
-        $menu = Menu::findOrFail($id);
+        $this->menuService->destroy($request->user(), $id);
 
-        // Check if user owns the restaurant
-        if ($menu->restaurant->user_id !== $request->user()->id && !$request->user()->isAdmin()) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
-
-        $menu->delete();
-
-        return response()->json([
-            'message' => 'Menu deleted successfully',
-        ]);
+        return $this->success(null, 'Menu deleted successfully');
     }
 }

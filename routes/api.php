@@ -45,14 +45,14 @@ Route::prefix('auth')->group(function () {
     Route::post('/admin/login', [AuthController::class, 'loginAdmin']);
     
     // Protected auth routes
-    Route::middleware('auth:sanctum')->group(function () {
+    Route::middleware('auth:api')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/me', [AuthController::class, 'me']);
     });
 });
 
 // Owner Profile (protected)
-Route::middleware('auth:sanctum')->prefix('owner')->group(function () {
+Route::middleware('auth:api')->prefix('owner')->group(function () {
     Route::put('/profile', [AuthController::class, 'updateOwnerProfile']);
 });
 
@@ -86,7 +86,7 @@ Route::prefix('restaurants')->group(function () {
 });
 
 // Protected restaurant routes (Owner)
-Route::middleware('auth:sanctum')->prefix('restaurants')->group(function () {
+Route::middleware('auth:api')->prefix('restaurants')->group(function () {
     Route::post('/', [RestaurantController::class, 'store']);
     Route::put('/{id}', [RestaurantController::class, 'update']);
     Route::delete('/{id}', [RestaurantController::class, 'destroy']);
@@ -109,7 +109,7 @@ Route::prefix('food-items')->group(function () {
 });
 
 // Protected food item routes (Owner)
-Route::middleware('auth:sanctum')->prefix('food-items')->group(function () {
+Route::middleware('auth:api')->prefix('food-items')->group(function () {
     Route::post('/', [FoodItemController::class, 'store']);
     Route::put('/{id}', [FoodItemController::class, 'update']);
     Route::delete('/{id}', [FoodItemController::class, 'destroy']);
@@ -126,7 +126,7 @@ Route::prefix('food-categories')->group(function () {
 });
 
 // Protected category routes (Admin)
-Route::middleware('auth:sanctum')->prefix('food-categories')->group(function () {
+Route::middleware('auth:api')->prefix('food-categories')->group(function () {
     Route::post('/', [FoodCategoryController::class, 'store']);
     Route::put('/{id}', [FoodCategoryController::class, 'update']);
     Route::delete('/{id}', [FoodCategoryController::class, 'destroy']);
@@ -144,7 +144,7 @@ Route::prefix('news')->group(function () {
 });
 
 // Protected news routes (Admin)
-Route::middleware('auth:sanctum')->prefix('news')->group(function () {
+Route::middleware('auth:api')->prefix('news')->group(function () {
     Route::post('/', [NewsController::class, 'store']);
     Route::put('/{id}', [NewsController::class, 'update']);
     Route::delete('/{id}', [NewsController::class, 'destroy']);
@@ -153,7 +153,7 @@ Route::middleware('auth:sanctum')->prefix('news')->group(function () {
 // ============================================================
 // MENU ROUTES
 // ============================================================
-Route::middleware('auth:sanctum')->prefix('menus')->group(function () {
+Route::middleware('auth:api')->prefix('menus')->group(function () {
     Route::get('/{id}', [MenuController::class, 'show']);
     Route::post('/', [MenuController::class, 'store']);
     Route::put('/{id}', [MenuController::class, 'update']);
@@ -171,7 +171,7 @@ Route::prefix('exchange-rates')->group(function () {
 // ============================================================
 // FILE UPLOAD ROUTES (Protected)
 // ============================================================
-Route::middleware('auth:sanctum')->prefix('upload')->group(function () {
+Route::middleware('auth:api')->prefix('upload')->group(function () {
     Route::post('/images', [FileUploadController::class, 'uploadImages']);
     Route::post('/restaurant-images', [FileUploadController::class, 'uploadRestaurantImages']);
     Route::post('/food-images', [FileUploadController::class, 'uploadFoodImages']);
@@ -180,7 +180,7 @@ Route::middleware('auth:sanctum')->prefix('upload')->group(function () {
 // ============================================================
 // ADMIN ROUTES (Protected - Admin only)
 // ============================================================
-Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
+Route::middleware('auth:api')->prefix('admin')->group(function () {
     // Dashboard
     Route::get('/dashboard/stats', [AdminController::class, 'getStats']);
     

@@ -2,37 +2,38 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Models\Country;
+use App\Http\Controllers\Api\BaseApiController;
+use App\Services\CountryService;
+use Illuminate\Http\JsonResponse;
 
 /**
- * @group Endpoints
+ * Reference data: list active countries, show country by ID.
+ *
+ * @group Reference
  */
-class CountryController extends Controller
+class CountryController extends BaseApiController
 {
+    public function __construct(
+        protected CountryService $countryService
+    ) {}
+
     /**
-     * GET api/countries
-     * 
      * Get list of all active countries
      */
-    public function index()
+    public function index(): JsonResponse
     {
-        $countries = Country::active()->get();
+        $countries = $this->countryService->index();
 
-        return response()->json($countries);
+        return $this->success($countries);
     }
 
     /**
-     * GET api/countries/{id}
-     * 
      * Get country details by ID
-     * 
-     * @urlParam id integer required The ID of the country. Example: 17
      */
-    public function show($id)
+    public function show(int $id): JsonResponse
     {
-        $country = Country::findOrFail($id);
+        $country = $this->countryService->show($id);
 
-        return response()->json($country);
+        return $this->success($country);
     }
 }

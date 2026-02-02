@@ -2,66 +2,53 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Models\Restaurant;
+use App\Http\Controllers\Api\BaseApiController;
+use App\Http\Requests\Admin\UpdateStatusRequest;
+use App\Services\RestaurantService;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 /**
- * @group Endpoints
+ * Admin: list all restaurants (with status filter), update restaurant status, list restaurant food items.
+ *
+ * @group Admin
  */
-class AdminRestaurantController extends Controller
+class AdminRestaurantController extends BaseApiController
 {
+    public function __construct(
+        protected RestaurantService $restaurantService
+    ) {}
+
     /**
-     * GET api/admin/restaurants
-     * 
-     * Get list of all restaurants (Admin only)
-     * 
-     * @queryParam status string Filter by status (active, hidden, pending). Example: active
-     * @queryParam per_page integer Items per page. Example: 15
+     * Get list of all restaurants (Admin). Filters: status, per_page
      */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
-        $query = Restaurant::with(['country', 'restaurantType', 'user']);
+        $restaurants = $this->restaurantService->adminIndex($request->only(['status', 'per_page']));
 
-        // Admin can see all restaurants including hidden ones
-        if ($request->has('status')) {
-            $query->where('status', $request->status);
-        }
-
-        $restaurants = $query->paginate($request->per_page ?? 15);
-
-        return response()->json($restaurants);
-    }
-
-    public function updateStatus(Request $request, $id)
-    {
-        $request->validate([
-            'status' => 'required|in:active,hidden,pending',
-        ]);
-
-        $restaurant = Restaurant::findOrFail($id);
-        $restaurant->update(['status' => $request->status]);
-
-        return response()->json([
-            'message' => 'Restaurant status updated successfully',
-            'restaurant' => $restaurant,
-        ]);
+        return $this->success($restaurants);
     }
 
     /**
-     * GET api/admin/restaurants/{restaurantId}/food-items
-     * 
-     * Get food items for a restaurant (Admin only)
-     * 
-     * @urlParam restaurantId integer required The ID of the restaurant. Example: 17
+     * Update restaurant status (active, hidden, pending).
      */
-    public function getRestaurantFoodItems($restaurantId)
+    public function updateStatus(UpdateStatusRequest $request, int $id): JsonResponse
     {
-        $restaurant = Restaurant::with(['foodItems.foodCategory'])->findOrFail($restaurantId);
+        $restaurant = $this->restaurantService->updateStatus($id, $request->validated('status'));
 
-        return response()->json([
-            'restaurant' => $restaurant,
-            'food_items' => $restaurant->foodItems()->paginate(20),
+        return $this->success(['restaurant' => $restaurant], 'Restaurant status updated successfully');
+    }
+
+    /**
+     * Get restaurant with paginated food items (Admin).
+     */
+    public function getRestaurantFoodItems(int $restaurantId): JsonResponse
+    {
+        $data = $this->restaurantService->getRestaurantFoodItems($restaurantId);
+
+        return $this->success([
+            'restaurant' => $data['restaurant'],
+            'food_items' => $data['food_items'],
         ]);
     }
 }
