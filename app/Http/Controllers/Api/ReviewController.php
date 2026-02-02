@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseApiController;
 use App\Http\Requests\Review\StoreReviewRequest;
 use App\Services\ReviewService;
 use Illuminate\Http\JsonResponse;
@@ -12,7 +12,7 @@ use Illuminate\Http\JsonResponse;
  *
  * @group Reviews
  */
-class ReviewController extends Controller
+class ReviewController extends BaseApiController
 {
     public function __construct(
         protected ReviewService $reviewService
@@ -25,7 +25,7 @@ class ReviewController extends Controller
     {
         $reviews = $this->reviewService->getReviews($foodItemId);
 
-        return response()->json($reviews);
+        return $this->success($reviews);
     }
 
     /**
@@ -35,10 +35,7 @@ class ReviewController extends Controller
     {
         $review = $this->reviewService->storeReview($foodItemId, $request->validated());
 
-        return response()->json([
-            'message' => 'Review submitted successfully. Awaiting approval.',
-            'review' => $review,
-        ], 201);
+        return $this->created(['review' => $review], 'Review submitted successfully. Awaiting approval.');
     }
 
     /**
@@ -48,7 +45,7 @@ class ReviewController extends Controller
     {
         $reviews = $this->reviewService->getRestaurantReviews($restaurantId);
 
-        return response()->json($reviews);
+        return $this->success($reviews);
     }
 
     /**
@@ -58,9 +55,6 @@ class ReviewController extends Controller
     {
         $review = $this->reviewService->storeRestaurantReview($restaurantId, $request->validated());
 
-        return response()->json([
-            'message' => 'Review submitted successfully. Awaiting approval.',
-            'review' => $review,
-        ], 201);
+        return $this->created(['review' => $review], 'Review submitted successfully. Awaiting approval.');
     }
 }

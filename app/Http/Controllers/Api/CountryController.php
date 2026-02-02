@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseApiController;
 use App\Services\CountryService;
 use Illuminate\Http\JsonResponse;
 
@@ -11,7 +11,7 @@ use Illuminate\Http\JsonResponse;
  *
  * @group Reference
  */
-class CountryController extends Controller
+class CountryController extends BaseApiController
 {
     public function __construct(
         protected CountryService $countryService
@@ -24,7 +24,7 @@ class CountryController extends Controller
     {
         $countries = $this->countryService->index();
 
-        return response()->json($countries);
+        return $this->success($countries);
     }
 
     /**
@@ -34,6 +34,6 @@ class CountryController extends Controller
     {
         $country = $this->countryService->show($id);
 
-        return response()->json($country);
+        return $this->success($country);
     }
 }

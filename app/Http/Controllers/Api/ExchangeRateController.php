@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseApiController;
 use App\Http\Requests\ExchangeRate\ConvertCurrencyRequest;
 use App\Services\ExchangeRateService;
 use Illuminate\Http\Request;
@@ -13,7 +13,7 @@ use Illuminate\Http\JsonResponse;
  *
  * @group Exchange Rates
  */
-class ExchangeRateController extends Controller
+class ExchangeRateController extends BaseApiController
 {
     public function __construct(
         protected ExchangeRateService $exchangeRateService
@@ -26,7 +26,7 @@ class ExchangeRateController extends Controller
     {
         $data = $this->exchangeRateService->getExchangeRates($request->get('date'));
 
-        return response()->json($data);
+        return $this->success($data);
     }
 
     /**
@@ -40,6 +40,6 @@ class ExchangeRateController extends Controller
             $request->to_currency
         );
 
-        return response()->json($data);
+        return $this->success($data);
     }
 }

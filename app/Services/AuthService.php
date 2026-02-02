@@ -6,9 +6,11 @@ use App\Contracts\Repositories\UserRepositoryInterface;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 /**
  * Authentication business logic: register owner, login (owner/admin), logout, me, update profile.
+ * Uses JWT (tymon/jwt-auth) for API tokens.
  */
 class AuthService
 {
@@ -17,7 +19,7 @@ class AuthService
     ) {}
 
     /**
-     * Register a new restaurant owner and issue token.
+     * Register a new restaurant owner and issue JWT token.
      *
      * @param array $data Validated: name, email, password, phone, address?, country_id?
      * @return array{user: User, token: string}
@@ -35,7 +37,7 @@ class AuthService
             'is_active' => true,
         ]);
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $token = JWTAuth::fromUser($user);
 
         return ['user' => $user, 'token' => $token];
     }
@@ -60,7 +62,7 @@ class AuthService
             throw ValidationException::withMessages(['email' => ['Your account is inactive. Please contact support.']]);
         }
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $token = JWTAuth::fromUser($user);
 
         return ['user' => $user, 'token' => $token];
     }
@@ -85,17 +87,17 @@ class AuthService
             throw ValidationException::withMessages(['email' => ['Your account is inactive.']]);
         }
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $token = JWTAuth::fromUser($user);
 
         return ['user' => $user, 'token' => $token];
     }
 
     /**
-     * Revoke current access token for user.
+     * Invalidate current JWT token (blacklist).
      */
     public function logout(User $user): void
     {
-        $user->currentAccessToken()->delete();
+        JWTAuth::invalidate(JWTAuth::getToken());
     }
 
     /**

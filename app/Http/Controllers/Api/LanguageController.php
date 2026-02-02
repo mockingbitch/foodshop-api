@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseApiController;
 use App\Services\LanguageService;
 use Illuminate\Http\JsonResponse;
 
@@ -11,7 +11,7 @@ use Illuminate\Http\JsonResponse;
  *
  * @group Reference
  */
-class LanguageController extends Controller
+class LanguageController extends BaseApiController
 {
     public function __construct(
         protected LanguageService $languageService
@@ -24,7 +24,7 @@ class LanguageController extends Controller
     {
         $languages = $this->languageService->index();
 
-        return response()->json($languages);
+        return $this->success($languages);
     }
 
     /**
@@ -34,6 +34,6 @@ class LanguageController extends Controller
     {
         $language = $this->languageService->show($code);
 
-        return response()->json($language);
+        return $this->success($language);
     }
 }

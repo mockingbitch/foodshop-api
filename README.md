@@ -1,66 +1,188 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# FoodShop API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+REST API cho quản lý nhà hàng và món ăn: xác thực (owner/admin), nhà hàng, món ăn, danh mục, tin tức, menu, đánh giá, tỷ giá và dashboard admin. API dùng **JWT** (tymon/jwt-auth).
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 📋 Yêu cầu
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **Chạy với Docker:** Docker Desktop, Docker Compose
+- **Chạy local:** PHP 8.2+, Composer, MySQL 8.0 (hoặc SQLite để dev)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## 🚀 Cài đặt
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### Cách 1: Docker (khuyến nghị)
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+**Bước 1:** Clone / mở thư mục project
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```bash
+cd /path/to/foodshop-api
+```
 
-## Laravel Sponsors
+**Bước 2:** Khởi động containers
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+```bash
+docker-compose up -d --build
+```
 
-### Premium Partners
+Các service: **app** (PHP 8.2-FPM + Laravel), **nginx**, **db** (MySQL 8.0), **redis** (tùy chọn), **phpmyadmin** (tùy chọn).
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+**Bước 3:** Đợi MySQL sẵn sàng (khoảng 30 giây), rồi cài đặt trong container
 
-## Contributing
+```bash
+docker-compose exec app composer install
+docker-compose exec app cp .env.example .env
+docker-compose exec app php artisan key:generate
+docker-compose exec app php artisan jwt:secret
+docker-compose exec app php artisan migrate
+docker-compose exec app php artisan db:seed
+docker-compose exec app php artisan storage:link
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+**Bước 4:** (Tùy chọn) Phân quyền thư mục
 
-## Code of Conduct
+```bash
+docker-compose exec app chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+docker-compose exec app chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+API: **http://localhost:8080** (port map trong `docker-compose.yml`).
 
-## Security Vulnerabilities
+---
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Cách 2: Chạy local (không Docker)
 
-## License
+```bash
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan jwt:secret
+# Cấu hình DB_* trong .env (MySQL/SQLite)
+php artisan migrate
+php artisan db:seed
+php artisan serve
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+API base: **http://localhost:8000/api** (hoặc `APP_URL` + `/api`).
+
+---
+
+## 🔐 Biến môi trường (.env)
+
+Các biến quan trọng:
+
+| Biến | Mô tả |
+|------|--------|
+| `APP_URL` | URL ứng dụng (vd: http://localhost:8080 hoặc http://localhost:8000) |
+| `DB_HOST`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` | Kết nối MySQL |
+| `JWT_SECRET` | Tạo bằng lệnh `php artisan jwt:secret` |
+
+Với Docker, `DB_HOST=db`. Với local, `DB_HOST=127.0.0.1`.
+
+---
+
+## ✅ Kiểm tra sau cài đặt
+
+**1. Health check API**
+
+Mở: `http://localhost:8080/api/test` (Docker) hoặc `http://localhost:8000/api/test` (local).
+
+Response mẫu:
+
+```json
+{
+  "message": "FoodShop API is running",
+  "version": "1.0.0",
+  "timestamp": "..."
+}
+```
+
+**2. Đăng nhập (JWT)**
+
+- Owner: `POST /api/auth/owner/login` với `email`, `password`
+- Admin: `POST /api/auth/admin/login`
+- Response có `access_token` → gửi kèm header: `Authorization: Bearer {access_token}` cho các API cần đăng nhập.
+
+**3. phpMyAdmin (nếu bật trong Docker)**  
+Truy cập port 8081 (xem `docker-compose.yml`), đăng nhập bằng `DB_USERNAME` / `DB_PASSWORD`.
+
+---
+
+## 👤 Tài khoản mặc định (từ Seeder)
+
+⚠️ **Đổi mật khẩu ngay sau lần đăng nhập đầu.**
+
+| Vai trò | Email | Mật khẩu mặc định |
+|--------|--------|-------------------|
+| Admin | admin@foodshop.com | admin123 |
+| Restaurant Owner | owner@foodshop.com | owner123 |
+
+---
+
+## 📚 Tài liệu API
+
+- **Docs tương tác (Scribe):** Mở `/api/docs` trên trình duyệt (có Try it out, Postman, OpenAPI).
+- **Tạo lại Scribe:** `php artisan scribe:generate` hoặc `composer docs`.
+- **Tham chiếu Markdown:** [docs/api.md](docs/api.md) — danh sách endpoint, method, auth, request/response.
+- **Postman:** Import [postman/FoodShop-API.postman_collection.json](postman/FoodShop-API.postman_collection.json). Đặt biến `base_url` và sau khi login điền `token` (Bearer).
+
+---
+
+## 📊 Cấu trúc database (sau migrate)
+
+- users, countries, languages, restaurant_types  
+- restaurants, food_categories, food_category_translations  
+- food_items, menus, news, reviews  
+- exchange_rates, personal_access_tokens (JWT blacklist dùng cache)
+
+Chi tiết bảng xem trong `database/migrations/`.
+
+---
+
+## 🔧 Lệnh hữu ích
+
+**Docker**
+
+```bash
+docker-compose logs -f          # Log tất cả
+docker-compose logs -f app      # Log app
+docker-compose down && docker-compose up -d
+docker-compose exec app bash    # Vào shell container app
+```
+
+**Artisan (trong container hoặc local)**
+
+```bash
+php artisan cache:clear
+php artisan config:clear
+php artisan route:clear
+php artisan migrate:fresh --seed   # Cảnh báo: xóa dữ liệu và seed lại
+```
+
+---
+
+## 🐛 Xử lý lỗi thường gặp
+
+| Lỗi | Gợi ý |
+|-----|--------|
+| Connection refused (API) | Kiểm tra `docker-compose ps`, `docker-compose restart`. |
+| SQLSTATE Connection refused (DB) | Đợi MySQL khởi động xong; với Docker dùng `DB_HOST=db`. |
+| Storage not writable | `chmod -R 775 storage bootstrap/cache` (và chown nếu dùng Docker). |
+| Class not found | `composer dump-autoload`, `php artisan config:clear`. |
+| JWT secret not set | Chạy `php artisan jwt:secret`. |
+
+---
+
+## 🔐 Bảo mật
+
+- Đổi mật khẩu admin/owner mặc định ngay sau cài đặt.
+- Không dùng `APP_DEBUG=true` và mật khẩu mặc định trên production.
+- Production: dùng HTTPS, cấu hình CORS đúng, không expose phpMyAdmin.
+
+---
+
+## 📄 License
+
+MIT.

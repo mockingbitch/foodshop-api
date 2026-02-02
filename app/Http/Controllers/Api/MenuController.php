@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseApiController;
 use App\Http\Requests\Menu\StoreMenuRequest;
 use App\Http\Requests\Menu\UpdateMenuRequest;
 use App\Services\MenuService;
@@ -14,7 +14,7 @@ use Illuminate\Http\JsonResponse;
  *
  * @group Menus
  */
-class MenuController extends Controller
+class MenuController extends BaseApiController
 {
     public function __construct(
         protected MenuService $menuService
@@ -27,7 +27,7 @@ class MenuController extends Controller
     {
         $menus = $this->menuService->getMenus($restaurantId);
 
-        return response()->json($menus);
+        return $this->success($menus);
     }
 
     /**
@@ -37,7 +37,7 @@ class MenuController extends Controller
     {
         $menu = $this->menuService->show($id);
 
-        return response()->json($menu);
+        return $this->success($menu);
     }
 
     /**
@@ -47,10 +47,7 @@ class MenuController extends Controller
     {
         $menu = $this->menuService->store($request->user(), $request->validated());
 
-        return response()->json([
-            'message' => 'Menu created successfully',
-            'menu' => $menu,
-        ], 201);
+        return $this->created(['menu' => $menu], 'Menu created successfully');
     }
 
     /**
@@ -60,10 +57,7 @@ class MenuController extends Controller
     {
         $menu = $this->menuService->update($request->user(), $id, $request->validated());
 
-        return response()->json([
-            'message' => 'Menu updated successfully',
-            'menu' => $menu,
-        ]);
+        return $this->success(['menu' => $menu], 'Menu updated successfully');
     }
 
     /**
@@ -73,6 +67,6 @@ class MenuController extends Controller
     {
         $this->menuService->destroy($request->user(), $id);
 
-        return response()->json(['message' => 'Menu deleted successfully']);
+        return $this->success(null, 'Menu deleted successfully');
     }
 }

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseApiController;
 use App\Http\Requests\Admin\UpdateStatusRequest;
 use App\Services\FoodItemService;
 use Illuminate\Http\Request;
@@ -13,7 +13,7 @@ use Illuminate\Http\JsonResponse;
  *
  * @group Admin
  */
-class AdminFoodItemController extends Controller
+class AdminFoodItemController extends BaseApiController
 {
     public function __construct(
         protected FoodItemService $foodItemService
@@ -26,10 +26,7 @@ class AdminFoodItemController extends Controller
     {
         $foodItem = $this->foodItemService->updateStatus($id, $request->validated('status'));
 
-        return response()->json([
-            'message' => 'Food item status updated successfully',
-            'food_item' => $foodItem,
-        ]);
+        return $this->success(['food_item' => $foodItem], 'Food item status updated successfully');
     }
 
     /**
@@ -42,6 +39,6 @@ class AdminFoodItemController extends Controller
             $request->only(['status'])
         );
 
-        return response()->json($foodItems);
+        return $this->success($foodItems);
     }
 }

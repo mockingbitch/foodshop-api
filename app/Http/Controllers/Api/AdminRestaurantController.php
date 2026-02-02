@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseApiController;
 use App\Http\Requests\Admin\UpdateStatusRequest;
 use App\Services\RestaurantService;
 use Illuminate\Http\Request;
@@ -13,7 +13,7 @@ use Illuminate\Http\JsonResponse;
  *
  * @group Admin
  */
-class AdminRestaurantController extends Controller
+class AdminRestaurantController extends BaseApiController
 {
     public function __construct(
         protected RestaurantService $restaurantService
@@ -26,7 +26,7 @@ class AdminRestaurantController extends Controller
     {
         $restaurants = $this->restaurantService->adminIndex($request->only(['status', 'per_page']));
 
-        return response()->json($restaurants);
+        return $this->success($restaurants);
     }
 
     /**
@@ -36,10 +36,7 @@ class AdminRestaurantController extends Controller
     {
         $restaurant = $this->restaurantService->updateStatus($id, $request->validated('status'));
 
-        return response()->json([
-            'message' => 'Restaurant status updated successfully',
-            'restaurant' => $restaurant,
-        ]);
+        return $this->success(['restaurant' => $restaurant], 'Restaurant status updated successfully');
     }
 
     /**
@@ -49,7 +46,7 @@ class AdminRestaurantController extends Controller
     {
         $data = $this->restaurantService->getRestaurantFoodItems($restaurantId);
 
-        return response()->json([
+        return $this->success([
             'restaurant' => $data['restaurant'],
             'food_items' => $data['food_items'],
         ]);

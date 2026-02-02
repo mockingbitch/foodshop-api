@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseApiController;
 use App\Services\AdminService;
 use Illuminate\Http\JsonResponse;
 
@@ -11,7 +11,7 @@ use Illuminate\Http\JsonResponse;
  *
  * @group Admin
  */
-class AdminController extends Controller
+class AdminController extends BaseApiController
 {
     public function __construct(
         protected AdminService $adminService
@@ -25,6 +25,6 @@ class AdminController extends Controller
     {
         $stats = $this->adminService->getStats();
 
-        return response()->json($stats);
+        return $this->success($stats);
     }
 }

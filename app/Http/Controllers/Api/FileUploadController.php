@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseApiController;
 use App\Http\Requests\FileUpload\UploadFoodImagesRequest;
 use App\Http\Requests\FileUpload\UploadImagesRequest;
 use App\Http\Requests\FileUpload\UploadRestaurantImagesRequest;
@@ -12,7 +12,7 @@ use Illuminate\Http\JsonResponse;
 /**
  * Image upload: generic images, restaurant (outside/inside), food (main + extra). Resize & store to public disk.
  */
-class FileUploadController extends Controller
+class FileUploadController extends BaseApiController
 {
     public function __construct(
         protected FileUploadService $fileUploadService
@@ -28,10 +28,7 @@ class FileUploadController extends Controller
             'food-images'
         );
 
-        return response()->json([
-            'message' => 'Images uploaded successfully',
-            'images' => $images,
-        ]);
+        return $this->success(['images' => $images], 'Images uploaded successfully');
     }
 
     /**
@@ -44,10 +41,7 @@ class FileUploadController extends Controller
             $request->file('inside_images')
         );
 
-        return response()->json([
-            'message' => 'Restaurant images uploaded successfully',
-            'images' => $result,
-        ]);
+        return $this->success(['images' => $result], 'Restaurant images uploaded successfully');
     }
 
     /**
@@ -60,9 +54,6 @@ class FileUploadController extends Controller
             $request->file('extra_images')
         );
 
-        return response()->json([
-            'message' => 'Food images uploaded successfully',
-            'images' => $result,
-        ]);
+        return $this->success(['images' => $result], 'Food images uploaded successfully');
     }
 }

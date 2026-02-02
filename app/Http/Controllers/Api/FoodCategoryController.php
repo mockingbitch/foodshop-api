@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseApiController;
 use App\Http\Requests\FoodCategory\AddFoodCategoryTranslationRequest;
 use App\Http\Requests\FoodCategory\StoreFoodCategoryRequest;
 use App\Http\Requests\FoodCategory\UpdateFoodCategoryRequest;
@@ -16,7 +16,7 @@ use Illuminate\Validation\ValidationException;
  *
  * @group Food Categories
  */
-class FoodCategoryController extends Controller
+class FoodCategoryController extends BaseApiController
 {
     public function __construct(
         protected FoodCategoryService $foodCategoryService
@@ -32,7 +32,7 @@ class FoodCategoryController extends Controller
             'parent_id' => $request->parent_id,
         ]);
 
-        return response()->json($categories);
+        return $this->success($categories);
     }
 
     /**
@@ -42,7 +42,7 @@ class FoodCategoryController extends Controller
     {
         $data = $this->foodCategoryService->show($id, $request->get('lang', 'en'));
 
-        return response()->json($data);
+        return $this->success($data);
     }
 
     /**
@@ -52,10 +52,7 @@ class FoodCategoryController extends Controller
     {
         $category = $this->foodCategoryService->store($request->validated());
 
-        return response()->json([
-            'message' => 'Category created successfully',
-            'category' => $category,
-        ], 201);
+        return $this->created(['category' => $category], 'Category created successfully');
     }
 
     /**
@@ -65,10 +62,7 @@ class FoodCategoryController extends Controller
     {
         $category = $this->foodCategoryService->update($id, $request->validated());
 
-        return response()->json([
-            'message' => 'Category updated successfully',
-            'category' => $category,
-        ]);
+        return $this->success(['category' => $category], 'Category updated successfully');
     }
 
     /**
@@ -79,12 +73,10 @@ class FoodCategoryController extends Controller
         try {
             $this->foodCategoryService->destroy($id);
         } catch (ValidationException $e) {
-            return response()->json([
-                'message' => $e->errors()->first(),
-            ], 422);
+            return $this->validationError($e->errors(), $e->errors()->first());
         }
 
-        return response()->json(['message' => 'Category deleted successfully']);
+        return $this->success(null, 'Category deleted successfully');
     }
 
     /**
@@ -94,9 +86,6 @@ class FoodCategoryController extends Controller
     {
         $translation = $this->foodCategoryService->addTranslation($id, $request->validated());
 
-        return response()->json([
-            'message' => 'Translation added/updated successfully',
-            'translation' => $translation,
-        ]);
+        return $this->success(['translation' => $translation], 'Translation added/updated successfully');
     }
 }

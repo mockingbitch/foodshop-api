@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseApiController;
 use App\Services\RestaurantTypeService;
 use Illuminate\Http\JsonResponse;
 
@@ -11,7 +11,7 @@ use Illuminate\Http\JsonResponse;
  *
  * @group Reference
  */
-class RestaurantTypeController extends Controller
+class RestaurantTypeController extends BaseApiController
 {
     public function __construct(
         protected RestaurantTypeService $restaurantTypeService
@@ -24,6 +24,6 @@ class RestaurantTypeController extends Controller
     {
         $types = $this->restaurantTypeService->index();
 
-        return response()->json($types);
+        return $this->success($types);
     }
 }

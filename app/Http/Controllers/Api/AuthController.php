@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseApiController;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterOwnerRequest;
 use App\Http\Requests\Auth\UpdateOwnerProfileRequest;
@@ -15,7 +15,7 @@ use Illuminate\Http\JsonResponse;
  *
  * @group Authentication
  */
-class AuthController extends Controller
+class AuthController extends BaseApiController
 {
     public function __construct(
         protected AuthService $authService
@@ -29,12 +29,11 @@ class AuthController extends Controller
     {
         $result = $this->authService->registerOwner($request->validated());
 
-        return response()->json([
-            'message' => 'Restaurant owner registered successfully',
+        return $this->created([
             'user' => $result['user'],
             'access_token' => $result['token'],
             'token_type' => 'Bearer',
-        ], 201);
+        ], 'Restaurant owner registered successfully');
     }
 
     /**
@@ -45,12 +44,11 @@ class AuthController extends Controller
     {
         $result = $this->authService->loginOwner($request->email, $request->password);
 
-        return response()->json([
-            'message' => 'Login successful',
+        return $this->success([
             'user' => $result['user'],
             'access_token' => $result['token'],
             'token_type' => 'Bearer',
-        ]);
+        ], 'Login successful');
     }
 
     /**
@@ -61,12 +59,11 @@ class AuthController extends Controller
     {
         $result = $this->authService->loginAdmin($request->email, $request->password);
 
-        return response()->json([
-            'message' => 'Admin login successful',
+        return $this->success([
             'user' => $result['user'],
             'access_token' => $result['token'],
             'token_type' => 'Bearer',
-        ]);
+        ], 'Admin login successful');
     }
 
     /**
@@ -77,7 +74,7 @@ class AuthController extends Controller
     {
         $this->authService->logout($request->user());
 
-        return response()->json(['message' => 'Logout successful']);
+        return $this->success(null, 'Logout successful');
     }
 
     /**
@@ -88,7 +85,7 @@ class AuthController extends Controller
     {
         $user = $this->authService->me($request->user());
 
-        return response()->json(['user' => $user]);
+        return $this->success(['user' => $user]);
     }
 
     /**
@@ -99,9 +96,6 @@ class AuthController extends Controller
     {
         $user = $this->authService->updateOwnerProfile($request->user(), $request->validated());
 
-        return response()->json([
-            'message' => 'Profile updated successfully',
-            'user' => $user,
-        ]);
+        return $this->success(['user' => $user], 'Profile updated successfully');
     }
 }

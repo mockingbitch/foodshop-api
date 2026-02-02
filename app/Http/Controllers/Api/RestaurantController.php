@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseApiController;
 use App\Http\Requests\Restaurant\GetNearbyRestaurantRequest;
 use App\Http\Requests\Restaurant\StoreRestaurantRequest;
 use App\Http\Requests\Restaurant\UpdateRestaurantRequest;
@@ -15,7 +15,7 @@ use Illuminate\Http\JsonResponse;
  *
  * @group Restaurants
  */
-class RestaurantController extends Controller
+class RestaurantController extends BaseApiController
 {
     public function __construct(
         protected RestaurantService $restaurantService
@@ -30,7 +30,7 @@ class RestaurantController extends Controller
             'country_id', 'restaurant_type_id', 'delivery_available', 'search', 'per_page'
         ]));
 
-        return response()->json($restaurants);
+        return $this->success($restaurants);
     }
 
     /**
@@ -40,7 +40,7 @@ class RestaurantController extends Controller
     {
         $restaurants = $this->restaurantService->search($request->only(['name', 'per_page']));
 
-        return response()->json($restaurants);
+        return $this->success($restaurants);
     }
 
     /**
@@ -54,7 +54,7 @@ class RestaurantController extends Controller
             $request->radius
         );
 
-        return response()->json($restaurants);
+        return $this->success($restaurants);
     }
 
     /**
@@ -64,7 +64,7 @@ class RestaurantController extends Controller
     {
         $data = $this->restaurantService->show($id);
 
-        return response()->json($data);
+        return $this->success($data);
     }
 
     /**
@@ -74,10 +74,7 @@ class RestaurantController extends Controller
     {
         $restaurant = $this->restaurantService->store($request->user(), $request->validated());
 
-        return response()->json([
-            'message' => 'Restaurant created successfully. Awaiting admin approval.',
-            'restaurant' => $restaurant,
-        ], 201);
+        return $this->created(['restaurant' => $restaurant], 'Restaurant created successfully. Awaiting admin approval.');
     }
 
     /**
@@ -91,10 +88,7 @@ class RestaurantController extends Controller
             $request->validated()
         );
 
-        return response()->json([
-            'message' => 'Restaurant updated successfully',
-            'restaurant' => $restaurant,
-        ]);
+        return $this->success(['restaurant' => $restaurant], 'Restaurant updated successfully');
     }
 
     /**
@@ -104,6 +98,6 @@ class RestaurantController extends Controller
     {
         $this->restaurantService->destroy($request->user(), $id);
 
-        return response()->json(['message' => 'Restaurant deleted successfully']);
+        return $this->success(null, 'Restaurant deleted successfully');
     }
 }

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseApiController;
 use App\Http\Requests\News\StoreNewsRequest;
 use App\Http\Requests\News\UpdateNewsRequest;
 use App\Services\NewsService;
@@ -14,7 +14,7 @@ use Illuminate\Http\JsonResponse;
  *
  * @group News
  */
-class NewsController extends Controller
+class NewsController extends BaseApiController
 {
     public function __construct(
         protected NewsService $newsService
@@ -27,7 +27,7 @@ class NewsController extends Controller
     {
         $news = $this->newsService->index($request->only(['type', 'search', 'per_page']));
 
-        return response()->json($news);
+        return $this->success($news);
     }
 
     /**
@@ -37,7 +37,7 @@ class NewsController extends Controller
     {
         $news = $this->newsService->getByType($type);
 
-        return response()->json($news);
+        return $this->success($news);
     }
 
     /**
@@ -47,7 +47,7 @@ class NewsController extends Controller
     {
         $news = $this->newsService->show($id);
 
-        return response()->json($news);
+        return $this->success($news);
     }
 
     /**
@@ -57,10 +57,7 @@ class NewsController extends Controller
     {
         $news = $this->newsService->store($request->validated());
 
-        return response()->json([
-            'message' => 'News created successfully',
-            'news' => $news,
-        ], 201);
+        return $this->created(['news' => $news], 'News created successfully');
     }
 
     /**
@@ -70,10 +67,7 @@ class NewsController extends Controller
     {
         $news = $this->newsService->update($id, $request->validated());
 
-        return response()->json([
-            'message' => 'News updated successfully',
-            'news' => $news,
-        ]);
+        return $this->success(['news' => $news], 'News updated successfully');
     }
 
     /**
@@ -83,6 +77,6 @@ class NewsController extends Controller
     {
         $this->newsService->destroy($id);
 
-        return response()->json(['message' => 'News deleted successfully']);
+        return $this->success(null, 'News deleted successfully');
     }
 }

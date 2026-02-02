@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseApiController;
+use App\Http\Requests\FoodItem\IndexFoodItemsRequest;
 use App\Http\Requests\FoodItem\StoreFoodItemRequest;
 use App\Http\Requests\FoodItem\UpdateFoodItemRequest;
 use App\Services\FoodItemService;
@@ -14,7 +15,7 @@ use Illuminate\Http\JsonResponse;
  *
  * @group Food Items
  */
-class FoodItemController extends Controller
+class FoodItemController extends BaseApiController
 {
     public function __construct(
         protected FoodItemService $foodItemService
@@ -23,23 +24,17 @@ class FoodItemController extends Controller
     /**
      * Get List of Food Items (paginated, filters: restaurant_id, category_id, best_seller, vegetarian, search, per_page)
      */
-    public function index(Request $request): JsonResponse
+    public function index(IndexFoodItemsRequest $request): JsonResponse
     {
-        $filters = $request->only([
-            'restaurant_id', 'category_id', 'best_seller', 'vegetarian', 'search', 'per_page'
-        ]);
-        $filters['best_seller'] = $request->boolean('best_seller');
-        $filters['vegetarian'] = $request->boolean('vegetarian');
+        $foodItems = $this->foodItemService->index($request->filters());
 
-        $foodItems = $this->foodItemService->index($filters);
-
-        return response()->json($foodItems);
+        return $this->success($foodItems);
     }
 
     /**
      * Search food items (delegates to index)
      */
-    public function search(Request $request): JsonResponse
+    public function search(IndexFoodItemsRequest $request): JsonResponse
     {
         return $this->index($request);
     }
@@ -51,7 +46,7 @@ class FoodItemController extends Controller
     {
         $foodItems = $this->foodItemService->getByCategory($categoryId);
 
-        return response()->json($foodItems);
+        return $this->success($foodItems);
     }
 
     /**
@@ -61,7 +56,7 @@ class FoodItemController extends Controller
     {
         $foodItems = $this->foodItemService->getBestSeller($request->only(['restaurant_id', 'per_page']));
 
-        return response()->json($foodItems);
+        return $this->success($foodItems);
     }
 
     /**
@@ -71,7 +66,7 @@ class FoodItemController extends Controller
     {
         $data = $this->foodItemService->show($id);
 
-        return response()->json($data);
+        return $this->success($data);
     }
 
     /**
@@ -81,10 +76,7 @@ class FoodItemController extends Controller
     {
         $foodItem = $this->foodItemService->store($request->user(), $request->validated());
 
-        return response()->json([
-            'message' => 'Food item created successfully. Awaiting code confirmation.',
-            'food_item' => $foodItem,
-        ], 201);
+        return $this->created(['food_item' => $foodItem], 'Food item created successfully. Awaiting code confirmation.');
     }
 
     /**
@@ -94,10 +86,7 @@ class FoodItemController extends Controller
     {
         $foodItem = $this->foodItemService->update($request->user(), $id, $request->validated());
 
-        return response()->json([
-            'message' => 'Food item updated successfully',
-            'food_item' => $foodItem,
-        ]);
+        return $this->success(['food_item' => $foodItem], 'Food item updated successfully');
     }
 
     /**
@@ -107,7 +96,7 @@ class FoodItemController extends Controller
     {
         $this->foodItemService->destroy($request->user(), $id);
 
-        return response()->json(['message' => 'Food item deleted successfully']);
+        return $this->success(null, 'Food item deleted successfully');
     }
 
     /**
@@ -117,10 +106,7 @@ class FoodItemController extends Controller
     {
         $foodItem = $this->foodItemService->confirmFoodCode($id);
 
-        return response()->json([
-            'message' => 'Food code confirmed successfully',
-            'food_item' => $foodItem,
-        ]);
+        return $this->success(['food_item' => $foodItem], 'Food code confirmed successfully');
     }
 
     /**
@@ -130,6 +116,6 @@ class FoodItemController extends Controller
     {
         $foodItems = $this->foodItemService->getPendingFoodCodes();
 
-        return response()->json($foodItems);
+        return $this->success($foodItems);
     }
 }
