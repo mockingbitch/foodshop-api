@@ -3,37 +3,36 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Language;
+use App\Services\LanguageService;
+use Illuminate\Http\JsonResponse;
 
 /**
- * @group Endpoints
+ * Reference data: list active languages (by sort_order), show language by code.
+ *
+ * @group Reference
  */
 class LanguageController extends Controller
 {
+    public function __construct(
+        protected LanguageService $languageService
+    ) {}
+
     /**
-     * GET api/languages
-     * 
      * Get list of all active languages
      */
-    public function index()
+    public function index(): JsonResponse
     {
-        $languages = Language::active()
-            ->orderBy('sort_order')
-            ->get();
+        $languages = $this->languageService->index();
 
         return response()->json($languages);
     }
 
     /**
-     * GET api/languages/{code}
-     * 
      * Get language details by code
-     * 
-     * @urlParam code integer required The language code. Example: 17
      */
-    public function show($code)
+    public function show(string $code): JsonResponse
     {
-        $language = Language::where('code', $code)->firstOrFail();
+        $language = $this->languageService->show($code);
 
         return response()->json($language);
     }

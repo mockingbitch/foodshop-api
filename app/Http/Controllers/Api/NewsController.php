@@ -3,106 +3,59 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\News;
+use App\Http\Requests\News\StoreNewsRequest;
+use App\Http\Requests\News\UpdateNewsRequest;
+use App\Services\NewsService;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 /**
- * @group Endpoints
+ * News/Course/Chef CRUD (Admin). Public list/show by type; create/update/delete protected.
+ *
+ * @group News
  */
 class NewsController extends Controller
 {
+    public function __construct(
+        protected NewsService $newsService
+    ) {}
+
     /**
-     * GET api/news
-     * 
-     * Get list of published news/articles
-     * 
-     * @queryParam type string Filter by type (news, course, chef). Example: news
-     * @queryParam search string Search by title. Example: pizza
-     * @queryParam per_page integer Items per page. Example: 15
+     * Get list of published news (filters: type, search, per_page)
      */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
-        $query = News::with(['category'])->published();
-
-        // Filter by type (news, course, chef)
-        if ($request->has('type')) {
-            $query->type($request->type);
-        }
-
-        // Search by title
-        if ($request->has('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->whereRaw("JSON_EXTRACT(title, '$.en') LIKE ?", ["%{$search}%"])
-                    ->orWhereRaw("JSON_EXTRACT(title, '$.vn') LIKE ?", ["%{$search}%"])
-                    ->orWhereRaw("JSON_EXTRACT(title, '$.kr') LIKE ?", ["%{$search}%"]);
-            });
-        }
-
-        $news = $query->orderBy('published_at', 'desc')
-            ->paginate($request->per_page ?? 15);
+        $news = $this->newsService->index($request->only(['type', 'search', 'per_page']));
 
         return response()->json($news);
     }
 
     /**
-     * GET api/news/by-type/{type}
-     * 
-     * Get news/articles by type
-     * 
-     * @urlParam type string required The type of news (news, course, chef). Example: consequatur
+     * Get news by type (news, course, chef)
      */
-    public function getByType($type)
+    public function getByType(string $type): JsonResponse
     {
-        $news = News::with(['category'])
-            ->published()
-            ->type($type)
-            ->orderBy('published_at', 'desc')
-            ->paginate(15);
+        $news = $this->newsService->getByType($type);
 
         return response()->json($news);
     }
 
     /**
-     * GET api/news/{id}
-     * 
-     * Get news/article details by ID
-     * 
-     * @urlParam id integer required The ID of the news. Example: 17
+     * Get news/article details by ID (increments view_count)
      */
-    public function show($id)
+    public function show(int $id): JsonResponse
     {
-        $news = News::with(['category'])->findOrFail($id);
-
-        // Increment view count
-        $news->increment('view_count');
+        $news = $this->newsService->show($id);
 
         return response()->json($news);
     }
 
-    public function store(Request $request)
+    /**
+     * Create news/course/chef article (Admin).
+     */
+    public function store(StoreNewsRequest $request): JsonResponse
     {
-        $request->validate([
-            'type' => 'required|in:news,course,chef',
-            'category_id' => 'nullable|exists:food_categories,id',
-            'title' => 'required|array',
-            'title.en' => 'required|string',
-            'content' => 'required|array',
-            'content.en' => 'required|string',
-            'excerpt' => 'nullable|array',
-            'featured_image' => 'nullable|string',
-            'gallery_images' => 'nullable|array',
-            'video_link' => 'nullable|string',
-            'chef_name' => 'nullable|string',
-            'chef_specialty' => 'nullable|string',
-            'course_price' => 'nullable|numeric',
-            'course_duration' => 'nullable|integer',
-            'max_participants' => 'nullable|integer',
-            'status' => 'required|in:published,draft,archived',
-            'published_at' => 'nullable|date',
-        ]);
-
-        $news = News::create($request->all());
+        $news = $this->newsService->store($request->validated());
 
         return response()->json([
             'message' => 'News created successfully',
@@ -110,24 +63,12 @@ class NewsController extends Controller
         ], 201);
     }
 
-    public function update(Request $request, $id)
+    /**
+     * Update news/course/chef article (Admin).
+     */
+    public function update(UpdateNewsRequest $request, int $id): JsonResponse
     {
-        $news = News::findOrFail($id);
-
-        $request->validate([
-            'type' => 'sometimes|in:news,course,chef',
-            'category_id' => 'nullable|exists:food_categories,id',
-            'title' => 'sometimes|array',
-            'content' => 'sometimes|array',
-            'excerpt' => 'nullable|array',
-            'featured_image' => 'nullable|string',
-            'gallery_images' => 'nullable|array',
-            'video_link' => 'nullable|string',
-            'status' => 'sometimes|in:published,draft,archived',
-            'published_at' => 'nullable|date',
-        ]);
-
-        $news->update($request->all());
+        $news = $this->newsService->update($id, $request->validated());
 
         return response()->json([
             'message' => 'News updated successfully',
@@ -135,13 +76,13 @@ class NewsController extends Controller
         ]);
     }
 
-    public function destroy($id)
+    /**
+     * Delete news/course/chef article (Admin).
+     */
+    public function destroy(int $id): JsonResponse
     {
-        $news = News::findOrFail($id);
-        $news->delete();
+        $this->newsService->destroy($id);
 
-        return response()->json([
-            'message' => 'News deleted successfully',
-        ]);
+        return response()->json(['message' => 'News deleted successfully']);
     }
 }

@@ -3,22 +3,28 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\FoodItem;
+use App\Http\Requests\Admin\UpdateStatusRequest;
+use App\Services\FoodItemService;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 /**
- * @group Endpoints
+ * Admin: update food item status; list food items by restaurant (with status filter).
+ *
+ * @group Admin
  */
 class AdminFoodItemController extends Controller
 {
-    public function updateStatus(Request $request, $id)
-    {
-        $request->validate([
-            'status' => 'required|in:active,hidden,pending',
-        ]);
+    public function __construct(
+        protected FoodItemService $foodItemService
+    ) {}
 
-        $foodItem = FoodItem::findOrFail($id);
-        $foodItem->update(['status' => $request->status]);
+    /**
+     * Update food item status (active, hidden, pending).
+     */
+    public function updateStatus(UpdateStatusRequest $request, int $id): JsonResponse
+    {
+        $foodItem = $this->foodItemService->updateStatus($id, $request->validated('status'));
 
         return response()->json([
             'message' => 'Food item status updated successfully',
@@ -27,24 +33,14 @@ class AdminFoodItemController extends Controller
     }
 
     /**
-     * GET api/admin/restaurants/{restaurantId}/food-items
-     * 
-     * Get food items for a restaurant (Admin only)
-     * 
-     * @urlParam restaurantId integer required The ID of the restaurant. Example: 17
-     * @queryParam status string Filter by status (active, hidden, pending). Example: active
+     * Get food items for a restaurant (Admin). Filter: status
      */
-    public function getRestaurantFoodItems($restaurantId, Request $request)
+    public function getRestaurantFoodItems(int $restaurantId, Request $request): JsonResponse
     {
-        $query = FoodItem::with(['foodCategory'])
-            ->where('restaurant_id', $restaurantId);
-
-        // Admin can filter by status
-        if ($request->has('status')) {
-            $query->where('status', $request->status);
-        }
-
-        $foodItems = $query->paginate(20);
+        $foodItems = $this->foodItemService->getRestaurantFoodItems(
+            $restaurantId,
+            $request->only(['status'])
+        );
 
         return response()->json($foodItems);
     }

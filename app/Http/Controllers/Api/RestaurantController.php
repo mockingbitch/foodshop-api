@@ -3,222 +3,107 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Restaurant;
+use App\Http\Requests\Restaurant\GetNearbyRestaurantRequest;
+use App\Http\Requests\Restaurant\StoreRestaurantRequest;
+use App\Http\Requests\Restaurant\UpdateRestaurantRequest;
+use App\Services\RestaurantService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
+use Illuminate\Http\JsonResponse;
 
 /**
+ * Restaurant CRUD, search, nearby (by coordinates), menus. Owner creates/updates; admin approves.
+ *
  * @group Restaurants
- * APIs for restaurant management
  */
 class RestaurantController extends Controller
 {
-    /**
-     * Get List of Restaurants
-     * 
-     * Retrieve a paginated list of active restaurants
-     * 
-     * @queryParam country_id Filter by country ID. Example: 1
-     * @queryParam restaurant_type_id Filter by restaurant type ID. Example: 1
-     * @queryParam delivery_available Filter by delivery availability. Example: true
-     * @queryParam search Search by name or city. Example: pizza
-     * @queryParam per_page Items per page. Example: 15
-     */
-    public function index(Request $request)
-    {
-        $query = Restaurant::with(['country', 'restaurantType', 'user'])
-            ->active();
-
-        // Filter by country
-        if ($request->has('country_id')) {
-            $query->where('country_id', $request->country_id);
-        }
-
-        // Filter by restaurant type
-        if ($request->has('restaurant_type_id')) {
-            $query->where('restaurant_type_id', $request->restaurant_type_id);
-        }
-
-        // Filter by delivery available
-        if ($request->has('delivery_available')) {
-            $query->where('delivery_available', $request->boolean('delivery_available'));
-        }
-
-        // Search by name or city
-        if ($request->has('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->whereRaw("JSON_EXTRACT(name, '$.en') LIKE ?", ["%{$search}%"])
-                    ->orWhereRaw("JSON_EXTRACT(name, '$.vn') LIKE ?", ["%{$search}%"])
-                    ->orWhereRaw("JSON_EXTRACT(name, '$.kr') LIKE ?", ["%{$search}%"])
-                    ->orWhere('city', 'LIKE', "%{$search}%");
-            });
-        }
-
-        $restaurants = $query->paginate($request->per_page ?? 15);
-
-        return response()->json($restaurants);
-    }
-
-    public function search(Request $request)
-    {
-        $query = Restaurant::with(['country', 'restaurantType'])->active();
-
-        if ($request->has('name')) {
-            $name = $request->name;
-            $query->where(function ($q) use ($name) {
-                $q->whereRaw("JSON_EXTRACT(name, '$.en') LIKE ?", ["%{$name}%"])
-                    ->orWhereRaw("JSON_EXTRACT(name, '$.vn') LIKE ?", ["%{$name}%"])
-                    ->orWhereRaw("JSON_EXTRACT(name, '$.kr') LIKE ?", ["%{$name}%"]);
-            });
-        }
-
-        $restaurants = $query->paginate($request->per_page ?? 15);
-
-        return response()->json($restaurants);
-    }
-
-    public function getNearby(Request $request)
-    {
-        $request->validate([
-            'latitude' => 'required|numeric',
-            'longitude' => 'required|numeric',
-            'radius' => 'nullable|numeric|min:1|max:100',
-        ]);
-
-        $radius = $request->radius ?? 10; // Default 10km
-
-        $restaurants = Restaurant::with(['country', 'restaurantType'])
-            ->active()
-            ->nearby($request->latitude, $request->longitude, $radius)
-            ->get();
-
-        return response()->json($restaurants);
-    }
+    public function __construct(
+        protected RestaurantService $restaurantService
+    ) {}
 
     /**
-     * Get Restaurant Details
-     * 
-     * Get detailed information about a specific restaurant
-     * 
-     * @urlParam id required The ID of the restaurant. Example: 1
+     * Get List of Restaurants (paginated, filters: country_id, restaurant_type_id, delivery_available, search, per_page)
      */
-    public function show($id)
+    public function index(Request $request): JsonResponse
     {
-        $restaurant = Restaurant::with(['country', 'restaurantType', 'user', 'menus', 'reviews'])
-            ->findOrFail($id);
-
-        // Get best seller food items
-        $bestSellers = $restaurant->foodItems()
-            ->active()
-            ->bestSeller()
-            ->limit(10)
-            ->get();
-
-        return response()->json([
-            'restaurant' => $restaurant,
-            'best_sellers' => $bestSellers,
-            'outside_images' => $restaurant->getOutsideImages(),
-            'inside_images' => $restaurant->getInsideImages(),
-        ]);
-    }
-
-    public function store(Request $request)
-    {
-        $request->validate([
-            'country_id' => 'required|exists:countries,id',
-            'restaurant_type_id' => 'required|exists:restaurant_types,id',
-            'name' => 'required|array',
-            'name.en' => 'required|string|max:255',
-            'description' => 'nullable|array',
-            'city' => 'required|string|max:100',
-            'address' => 'required|string',
-            'phone' => 'required|string|max:20',
-            'zalo' => 'nullable|string|max:50',
-            'email' => 'nullable|email',
-            'latitude' => 'nullable|numeric',
-            'longitude' => 'nullable|numeric',
-            'delivery_available' => 'boolean',
-            'remark' => 'nullable|array',
-        ]);
-
-        // Generate unique restaurant code
-        $code = $this->generateRestaurantCode($request->country_id);
-
-        $restaurant = Restaurant::create(array_merge($request->all(), [
-            'code' => $code,
-            'user_id' => $request->user()->id,
-            'status' => 'pending', // Admin approval required
+        $restaurants = $this->restaurantService->index($request->only([
+            'country_id', 'restaurant_type_id', 'delivery_available', 'search', 'per_page'
         ]));
+
+        return response()->json($restaurants);
+    }
+
+    /**
+     * Search restaurants by name
+     */
+    public function search(Request $request): JsonResponse
+    {
+        $restaurants = $this->restaurantService->search($request->only(['name', 'per_page']));
+
+        return response()->json($restaurants);
+    }
+
+    /**
+     * Get restaurants within radius (km) of latitude/longitude
+     */
+    public function getNearby(GetNearbyRestaurantRequest $request): JsonResponse
+    {
+        $restaurants = $this->restaurantService->getNearby(
+            $request->latitude,
+            $request->longitude,
+            $request->radius
+        );
+
+        return response()->json($restaurants);
+    }
+
+    /**
+     * Get Restaurant Details (with best_sellers, outside_images, inside_images)
+     */
+    public function show(int $id): JsonResponse
+    {
+        $data = $this->restaurantService->show($id);
+
+        return response()->json($data);
+    }
+
+    /**
+     * Create restaurant (owner). Status pending until admin approval.
+     */
+    public function store(StoreRestaurantRequest $request): JsonResponse
+    {
+        $restaurant = $this->restaurantService->store($request->user(), $request->validated());
 
         return response()->json([
             'message' => 'Restaurant created successfully. Awaiting admin approval.',
-            'restaurant' => $restaurant->load(['country', 'restaurantType']),
+            'restaurant' => $restaurant,
         ], 201);
     }
 
-    public function update(Request $request, $id)
+    /**
+     * Update restaurant (owner or admin).
+     */
+    public function update(UpdateRestaurantRequest $request, int $id): JsonResponse
     {
-        $restaurant = Restaurant::findOrFail($id);
-
-        // Check if user owns this restaurant
-        if ($restaurant->user_id !== $request->user()->id && !$request->user()->isAdmin()) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
-
-        $request->validate([
-            'name' => 'sometimes|array',
-            'description' => 'nullable|array',
-            'city' => 'sometimes|string|max:100',
-            'address' => 'sometimes|string',
-            'phone' => 'sometimes|string|max:20',
-            'zalo' => 'nullable|string|max:50',
-            'email' => 'nullable|email',
-            'delivery_available' => 'boolean',
-            'remark' => 'nullable|array',
-        ]);
-
-        $restaurant->update($request->all());
+        $restaurant = $this->restaurantService->update(
+            $request->user(),
+            $id,
+            $request->validated()
+        );
 
         return response()->json([
             'message' => 'Restaurant updated successfully',
-            'restaurant' => $restaurant->load(['country', 'restaurantType']),
+            'restaurant' => $restaurant,
         ]);
     }
 
-    public function destroy(Request $request, $id)
+    /**
+     * Delete restaurant (owner or admin).
+     */
+    public function destroy(Request $request, int $id): JsonResponse
     {
-        $restaurant = Restaurant::findOrFail($id);
+        $this->restaurantService->destroy($request->user(), $id);
 
-        // Check if user owns this restaurant
-        if ($restaurant->user_id !== $request->user()->id && !$request->user()->isAdmin()) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
-
-        $restaurant->delete();
-
-        return response()->json([
-            'message' => 'Restaurant deleted successfully',
-        ]);
-    }
-
-    private function generateRestaurantCode($countryId)
-    {
-        $country = \App\Models\Country::find($countryId);
-        $countryCode = $country->code;
-
-        // Get the last restaurant code for this country
-        $lastRestaurant = Restaurant::where('code', 'LIKE', "{$countryCode}-%")
-            ->orderBy('id', 'desc')
-            ->first();
-
-        if ($lastRestaurant) {
-            $lastNumber = (int) substr($lastRestaurant->code, strlen($countryCode) + 1);
-            $newNumber = $lastNumber + 1;
-        } else {
-            $newNumber = 1;
-        }
-
-        return sprintf('%s-%04d', $countryCode, $newNumber);
+        return response()->json(['message' => 'Restaurant deleted successfully']);
     }
 }
