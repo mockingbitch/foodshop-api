@@ -41,9 +41,7 @@ yarn-error.log
 ehthumbs.db
 Thumbs.db
 *.sublime-project
-*.sublime-workspace
-
-# Scribe generated files
+*.sublime-workspace# Scribe generated files
 /.scribe
 /public/vendor/scribe
 
