@@ -1,77 +1,77 @@
-name: Deploy Foodshop API
-on:
-  push:
-    branches: [ "develop" ]
+# name: Deploy Foodshop API
+# on:
+#   push:
+#     branches: [ "develop" ]
 
-jobs:
-  deploy:
-    runs-on: self-hosted
+# jobs:
+#   deploy:
+#     runs-on: self-hosted
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
 
-      - name: Check environment
-        run: |
-          whoami
-          pwd
+#       - name: Check environment
+#         run: |
+#           whoami
+#           pwd
 
-      - name: Deploy
-        run: |
-          cd /var/www/html
+#       - name: Deploy
+#         run: |
+#           cd /var/www/html
           
-          # Reset any changes in storage/ directory to avoid git conflicts
-          # Exclude logs directory to preserve log files
-          echo "🔄 Resetting storage directory changes (preserving logs)..."
-          # Only reset tracked files in framework and app directories, NOT logs
-          git checkout -- storage/framework/ storage/app/ 2>/dev/null || true
-          git clean -fd storage/framework/ storage/app/ 2>/dev/null || true
-          # DO NOT touch storage/logs/ - preserve all log files
+#           # Reset any changes in storage/ directory to avoid git conflicts
+#           # Exclude logs directory to preserve log files
+#           echo "🔄 Resetting storage directory changes (preserving logs)..."
+#           # Only reset tracked files in framework and app directories, NOT logs
+#           git checkout -- storage/framework/ storage/app/ 2>/dev/null || true
+#           git clean -fd storage/framework/ storage/app/ 2>/dev/null || true
+#           # DO NOT touch storage/logs/ - preserve all log files
           
-          # Pull latest code
-          echo "📥 Pulling latest code..."
-          git pull origin develop
+#           # Pull latest code
+#           echo "📥 Pulling latest code..."
+#           git pull origin develop
           
-          # Set proper permissions for storage and bootstrap/cache directories
-          echo "🔐 Setting permissions for storage and cache directories..."
-          mkdir -p storage/framework/cache
-          mkdir -p storage/framework/sessions
-          mkdir -p storage/framework/views
-          mkdir -p storage/logs
-          mkdir -p bootstrap/cache
+#           # Set proper permissions for storage and bootstrap/cache directories
+#           echo "🔐 Setting permissions for storage and cache directories..."
+#           mkdir -p storage/framework/cache
+#           mkdir -p storage/framework/sessions
+#           mkdir -p storage/framework/views
+#           mkdir -p storage/logs
+#           mkdir -p bootstrap/cache
           
-          # Set ownership and permissions (adjust user:group based on your server setup)
-          # Common setups: www-data:www-data (Ubuntu/Debian) or nginx:nginx (CentOS/RHEL)
-          chown -R www-data:www-data storage bootstrap/cache 2>/dev/null || \
-          chown -R nginx:nginx storage bootstrap/cache 2>/dev/null || \
-          chown -R apache:apache storage bootstrap/cache 2>/dev/null || true
+#           # Set ownership and permissions (adjust user:group based on your server setup)
+#           # Common setups: www-data:www-data (Ubuntu/Debian) or nginx:nginx (CentOS/RHEL)
+#           chown -R www-data:www-data storage bootstrap/cache 2>/dev/null || \
+#           chown -R nginx:nginx storage bootstrap/cache 2>/dev/null || \
+#           chown -R apache:apache storage bootstrap/cache 2>/dev/null || true
           
-          # Set directory permissions (755 for directories, 644 for files)
-          find storage bootstrap/cache -type d -exec chmod 755 {} \;
-          find storage bootstrap/cache -type f -exec chmod 644 {} \;
+#           # Set directory permissions (755 for directories, 644 for files)
+#           find storage bootstrap/cache -type d -exec chmod 755 {} \;
+#           find storage bootstrap/cache -type f -exec chmod 644 {} \;
           
-          # Ensure write permissions for Laravel
-          chmod -R 775 storage bootstrap/cache 2>/dev/null || true
+#           # Ensure write permissions for Laravel
+#           chmod -R 775 storage bootstrap/cache 2>/dev/null || true
           
-          # Install/update dependencies (if needed)
-          echo "📦 Installing dependencies..."
-          composer install --no-interaction --optimize-autoloader || true
+#           # Install/update dependencies (if needed)
+#           echo "📦 Installing dependencies..."
+#           composer install --no-interaction --optimize-autoloader || true
           
-          # Run migrations
-          echo "📊 Running migrations..."
-          php artisan migrate --force || true
+#           # Run migrations
+#           echo "📊 Running migrations..."
+#           php artisan migrate --force || true
           
-          # Optimize Laravel
-          php artisan config:clear
-          php artisan route:clear
-          php artisan cache:clear
-          php artisan view:clear
+#           # Optimize Laravel
+#           php artisan config:clear
+#           php artisan route:clear
+#           php artisan cache:clear
+#           php artisan view:clear
 
-          # Clear Scribe cache
-          rm -rf .scribe/endpoints.cache/*
-          rm -rf storage/app/scribe/*
+#           # Clear Scribe cache
+#           rm -rf .scribe/endpoints.cache/*
+#           rm -rf storage/app/scribe/*
 
-          # Regenerate
-          php artisan scribe:generate
-          # Final permission check
-          echo "✅ Deployment complete!"
+#           # Regenerate
+#           php artisan scribe:generate
+#           # Final permission check
+#           echo "✅ Deployment complete!"
