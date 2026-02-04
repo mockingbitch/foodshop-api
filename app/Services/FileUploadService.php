@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Facades\Image;
 
@@ -25,7 +26,7 @@ class FileUploadService
         foreach ($images as $image) {
             $urls[] = $this->processAndStoreImage($image, $folder);
         }
-
+        Log::info('Images uploaded', ['folder' => $folder, 'count' => count($urls)]);
         return $urls;
     }
 
@@ -50,7 +51,10 @@ class FileUploadService
                 $result['inside_images'][] = $this->processAndStoreImage($image, 'restaurant-images/inside');
             }
         }
-
+        $total = count($result['outside_images']) + count($result['inside_images']);
+        if ($total > 0) {
+            Log::info('Restaurant images uploaded', ['outside' => count($result['outside_images']), 'inside' => count($result['inside_images'])]);
+        }
         return $result;
     }
 
@@ -73,7 +77,7 @@ class FileUploadService
                 $result['extra_images'][] = $this->processAndStoreImage($image, 'food-images/extra');
             }
         }
-
+        Log::info('Food images uploaded', ['extra_count' => count($result['extra_images'])]);
         return $result;
     }
 
@@ -89,15 +93,19 @@ class FileUploadService
         $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
         $path = $folder . '/' . $filename;
 
-        $img = Image::make($image)
-            ->resize(1200, null, function ($constraint) {
-                $constraint->aspectRatio();
-                $constraint->upsize();
-            })
-            ->encode('jpg', 85);
+        try {
+            $img = Image::make($image)
+                ->resize(1200, null, function ($constraint) {
+                    $constraint->aspectRatio();
+                    $constraint->upsize();
+                })
+                ->encode('jpg', 85);
 
-        Storage::disk('public')->put($path, (string) $img);
-
-        return Storage::url($path);
+            Storage::disk('public')->put($path, (string) $img);
+            return Storage::url($path);
+        } catch (\Throwable $e) {
+            Log::error('Image upload failed', ['folder' => $folder, 'error' => $e->getMessage()]);
+            throw $e;
+        }
     }
 }

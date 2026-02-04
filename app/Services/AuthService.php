@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Contracts\Repositories\UserRepositoryInterface;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
@@ -39,6 +40,8 @@ class AuthService
 
         $token = JWTAuth::fromUser($user);
 
+        Log::info('Owner registered', ['user_id' => $user->id, 'email' => $user->email]);
+
         return ['user' => $user, 'token' => $token];
     }
 
@@ -55,14 +58,18 @@ class AuthService
         $user = $this->userRepository->findByEmailAndRole($email, 'restaurant_owner');
 
         if (!$user || !Hash::check($password, $user->password)) {
+            Log::warning('Owner login failed: invalid credentials', ['email' => $email]);
             throw ValidationException::withMessages(['email' => ['The provided credentials are incorrect.']]);
         }
 
         if (!$user->is_active) {
+            Log::warning('Owner login failed: inactive account', ['user_id' => $user->id]);
             throw ValidationException::withMessages(['email' => ['Your account is inactive. Please contact support.']]);
         }
 
         $token = JWTAuth::fromUser($user);
+
+        Log::info('Owner logged in', ['user_id' => $user->id]);
 
         return ['user' => $user, 'token' => $token];
     }
@@ -80,14 +87,18 @@ class AuthService
         $user = $this->userRepository->findByEmailAndRole($email, 'admin');
 
         if (!$user || !Hash::check($password, $user->password)) {
+            Log::warning('Admin login failed: invalid credentials', ['email' => $email]);
             throw ValidationException::withMessages(['email' => ['The provided credentials are incorrect.']]);
         }
 
         if (!$user->is_active) {
+            Log::warning('Admin login failed: inactive account', ['user_id' => $user->id]);
             throw ValidationException::withMessages(['email' => ['Your account is inactive.']]);
         }
 
         $token = JWTAuth::fromUser($user);
+
+        Log::info('Admin logged in', ['user_id' => $user->id]);
 
         return ['user' => $user, 'token' => $token];
     }
@@ -98,6 +109,7 @@ class AuthService
     public function logout(User $user): void
     {
         JWTAuth::invalidate(JWTAuth::getToken());
+        Log::info('User logged out', ['user_id' => $user->id]);
     }
 
     /**
@@ -117,9 +129,11 @@ class AuthService
      */
     public function updateOwnerProfile(User $user, array $data): User
     {
-        return $this->userRepository->updateUser(
+        $updated = $this->userRepository->updateUser(
             $user,
             array_intersect_key($data, array_flip(['name', 'phone', 'address', 'country_id']))
         )->load('country');
+        Log::info('Owner profile updated', ['user_id' => $user->id]);
+        return $updated;
     }
 }
