@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
+use App\Contracts\Repositories\CountryRepositoryInterface;
 use App\Models\Country;
-use App\Repositories\CountryRepository;
 use Illuminate\Database\Eloquent\Collection;
 
 /**
