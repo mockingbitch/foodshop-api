@@ -126,7 +126,7 @@ Route::prefix('food-categories')->group(function () {
 });
 
 // Protected category routes (Admin)
-Route::middleware('auth:api')->prefix('food-categories')->group(function () {
+Route::middleware(['auth:api', 'roles:admin'])->prefix('food-categories')->group(function () {
     Route::post('/', [FoodCategoryController::class, 'store']);
     Route::put('/{id}', [FoodCategoryController::class, 'update']);
     Route::delete('/{id}', [FoodCategoryController::class, 'destroy']);
@@ -144,7 +144,7 @@ Route::prefix('news')->group(function () {
 });
 
 // Protected news routes (Admin)
-Route::middleware('auth:api')->prefix('news')->group(function () {
+Route::middleware(['auth:api', 'roles:admin'])->prefix('news')->group(function () {
     Route::post('/', [NewsController::class, 'store']);
     Route::put('/{id}', [NewsController::class, 'update']);
     Route::delete('/{id}', [NewsController::class, 'destroy']);
@@ -180,7 +180,7 @@ Route::middleware('auth:api')->prefix('upload')->group(function () {
 // ============================================================
 // ADMIN ROUTES (Protected - Admin only)
 // ============================================================
-Route::middleware('auth:api')->prefix('admin')->group(function () {
+Route::middleware(['auth:api', 'roles:admin'])->prefix('admin')->group(function () {
     // Dashboard
     Route::get('/dashboard/stats', [AdminController::class, 'getStats']);
     
