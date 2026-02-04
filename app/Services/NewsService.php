@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Contracts\Repositories\NewsRepositoryInterface;
 use App\Models\News;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Log;
 
 /**
  * News/Course/Chef article business logic: list, getByType, show (with view increment), store, update, destroy.
@@ -59,7 +60,9 @@ class NewsService
      */
     public function store(array $data): News
     {
-        return $this->newsRepository->create($data);
+        $news = $this->newsRepository->create($data);
+        Log::info('News created', ['news_id' => $news->id, 'type' => $news->type ?? null]);
+        return $news;
     }
 
     /**
@@ -73,7 +76,7 @@ class NewsService
     {
         $news = $this->newsRepository->findOrFail($id);
         $news->update($data);
-
+        Log::info('News updated', ['news_id' => $id]);
         return $news;
     }
 
@@ -85,5 +88,6 @@ class NewsService
     public function destroy(int $id): void
     {
         $this->newsRepository->delete($id);
+        Log::info('News deleted', ['news_id' => $id]);
     }
 }

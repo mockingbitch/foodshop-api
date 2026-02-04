@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Contracts\Repositories\ExchangeRateRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Exchange rate business logic: get rates by date, convert amount between currencies.
@@ -42,6 +43,14 @@ class ExchangeRateService
         $date = $date ?? now()->toDateString();
         $exchangeRate = $this->exchangeRateRepository->findRate($fromCurrency, $toCurrency, $date);
         $convertedAmount = $exchangeRate ? (float) ($amount * $exchangeRate->rate) : null;
+
+        if ($convertedAmount === null && $fromCurrency !== $toCurrency) {
+            Log::warning('Exchange rate not found, conversion skipped', [
+                'from_currency' => $fromCurrency,
+                'to_currency' => $toCurrency,
+                'date' => $date,
+            ]);
+        }
 
         return [
             'original_amount' => $amount,

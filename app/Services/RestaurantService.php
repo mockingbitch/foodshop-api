@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Restaurant business logic: list, search, nearby, show, store, update, destroy, admin list/update status.
@@ -96,6 +97,8 @@ class RestaurantService
             'status' => 'pending',
         ]));
 
+        Log::info('Restaurant created', ['restaurant_id' => $restaurant->id, 'user_id' => $user->id, 'code' => $code]);
+
         return $restaurant->load(['country', 'restaurantType']);
     }
 
@@ -113,10 +116,13 @@ class RestaurantService
         $restaurant = $this->restaurantRepository->findOrFail($id);
 
         if ($restaurant->user_id !== $user->id && !$user->isAdmin()) {
+            Log::warning('Restaurant update unauthorized', ['restaurant_id' => $id, 'user_id' => $user->id]);
             throw new AuthorizationException('Unauthorized');
         }
 
         $restaurant->update($data);
+
+        Log::info('Restaurant updated', ['restaurant_id' => $id, 'user_id' => $user->id]);
 
         return $restaurant->load(['country', 'restaurantType']);
     }
@@ -133,10 +139,12 @@ class RestaurantService
         $restaurant = $this->restaurantRepository->findOrFail($id);
 
         if ($restaurant->user_id !== $user->id && !$user->isAdmin()) {
+            Log::warning('Restaurant delete unauthorized', ['restaurant_id' => $id, 'user_id' => $user->id]);
             throw new AuthorizationException('Unauthorized');
         }
 
         $restaurant->delete();
+        Log::info('Restaurant deleted', ['restaurant_id' => $id, 'user_id' => $user->id]);
     }
 
     /**
@@ -161,6 +169,8 @@ class RestaurantService
     {
         $restaurant = $this->restaurantRepository->findOrFail($id);
         $restaurant->update(['status' => $status]);
+
+        Log::info('Restaurant status updated (admin)', ['restaurant_id' => $id, 'status' => $status]);
 
         return $restaurant;
     }

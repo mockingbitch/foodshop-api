@@ -7,6 +7,7 @@ use App\Models\FoodItem;
 use App\Models\Review;
 use App\Models\Restaurant;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Review business logic: get reviews for food item or restaurant; create review (status pending).
@@ -37,11 +38,13 @@ class ReviewService
      */
     public function storeReview(int $foodItemId, array $data): Review
     {
-        return $this->reviewRepository->createForReviewable(
+        $review = $this->reviewRepository->createForReviewable(
             FoodItem::class,
             $foodItemId,
             array_merge($data, ['status' => 'pending'])
         );
+        Log::info('Review created for food item', ['review_id' => $review->id, 'food_item_id' => $foodItemId]);
+        return $review;
     }
 
     /**
@@ -64,10 +67,12 @@ class ReviewService
      */
     public function storeRestaurantReview(int $restaurantId, array $data): Review
     {
-        return $this->reviewRepository->createForReviewable(
+        $review = $this->reviewRepository->createForReviewable(
             Restaurant::class,
             $restaurantId,
             array_merge($data, ['status' => 'pending'])
         );
+        Log::info('Review created for restaurant', ['review_id' => $review->id, 'restaurant_id' => $restaurantId]);
+        return $review;
     }
 }

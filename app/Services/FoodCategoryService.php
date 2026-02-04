@@ -6,6 +6,7 @@ use App\Contracts\Repositories\FoodCategoryRepositoryInterface;
 use App\Models\FoodCategory;
 use App\Models\FoodCategoryTranslation;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -57,8 +58,9 @@ class FoodCategoryService
     public function store(array $data): FoodCategory
     {
         $translations = $data['translations'] ?? [];
-
-        return $this->foodCategoryRepository->createWithTranslations($data, $translations);
+        $category = $this->foodCategoryRepository->createWithTranslations($data, $translations);
+        Log::info('Food category created', ['category_id' => $category->id, 'code' => $category->code]);
+        return $category;
     }
 
     /**
@@ -70,7 +72,9 @@ class FoodCategoryService
      */
     public function update(int $id, array $data): FoodCategory
     {
-        return $this->foodCategoryRepository->updateCategory($id, $data);
+        $category = $this->foodCategoryRepository->updateCategory($id, $data);
+        Log::info('Food category updated', ['category_id' => $id]);
+        return $category;
     }
 
     /**
@@ -82,14 +86,17 @@ class FoodCategoryService
     public function destroy(int $id): void
     {
         if ($this->foodCategoryRepository->countChildren($id) > 0) {
+            Log::warning('Food category delete blocked: has subcategories', ['category_id' => $id]);
             throw ValidationException::withMessages(['category' => ['Cannot delete category with subcategories.']]);
         }
 
         if ($this->foodCategoryRepository->countFoodItems($id) > 0) {
+            Log::warning('Food category delete blocked: has food items', ['category_id' => $id]);
             throw ValidationException::withMessages(['category' => ['Cannot delete category with food items.']]);
         }
 
         $this->foodCategoryRepository->delete($id);
+        Log::info('Food category deleted', ['category_id' => $id]);
     }
 
     /**
@@ -101,6 +108,8 @@ class FoodCategoryService
      */
     public function addTranslation(int $id, array $data): FoodCategoryTranslation
     {
-        return $this->foodCategoryRepository->updateOrCreateTranslation($id, $data);
+        $translation = $this->foodCategoryRepository->updateOrCreateTranslation($id, $data);
+        Log::info('Food category translation added', ['category_id' => $id, 'language_code' => $data['language_code'] ?? null]);
+        return $translation;
     }
 }

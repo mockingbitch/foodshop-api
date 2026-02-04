@@ -8,6 +8,7 @@ use App\Models\Menu;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Restaurant menu business logic: getMenus, show, store, update, destroy. Owner must own restaurant.
@@ -54,10 +55,13 @@ class MenuService
         $restaurant = $this->restaurantRepository->findOrFail($data['restaurant_id']);
 
         if ($restaurant->user_id !== $user->id && !$user->isAdmin()) {
+            Log::warning('Menu create unauthorized', ['restaurant_id' => $data['restaurant_id'], 'user_id' => $user->id]);
             throw new AuthorizationException('Unauthorized');
         }
 
-        return $this->menuRepository->create($data);
+        $menu = $this->menuRepository->create($data);
+        Log::info('Menu created', ['menu_id' => $menu->id, 'restaurant_id' => $data['restaurant_id'], 'user_id' => $user->id]);
+        return $menu;
     }
 
     /**
@@ -74,11 +78,12 @@ class MenuService
         $menu = $this->menuRepository->findWithRestaurant($id);
 
         if ($menu->restaurant->user_id !== $user->id && !$user->isAdmin()) {
+            Log::warning('Menu update unauthorized', ['menu_id' => $id, 'user_id' => $user->id]);
             throw new AuthorizationException('Unauthorized');
         }
 
         $menu->update($data);
-
+        Log::info('Menu updated', ['menu_id' => $id, 'user_id' => $user->id]);
         return $menu;
     }
 
@@ -94,9 +99,11 @@ class MenuService
         $menu = $this->menuRepository->findWithRestaurant($id);
 
         if ($menu->restaurant->user_id !== $user->id && !$user->isAdmin()) {
+            Log::warning('Menu delete unauthorized', ['menu_id' => $id, 'user_id' => $user->id]);
             throw new AuthorizationException('Unauthorized');
         }
 
         $menu->delete();
+        Log::info('Menu deleted', ['menu_id' => $id, 'user_id' => $user->id]);
     }
 }

@@ -11,6 +11,7 @@ use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Food item business logic: list, search, by category, best seller, show, store, update, destroy,
@@ -93,6 +94,7 @@ class FoodItemService
         $restaurant = $this->restaurantRepository->findOrFail($data['restaurant_id'])->load('country');
 
         if ($restaurant->user_id !== $user->id && !$user->isAdmin()) {
+            Log::warning('Food item create unauthorized', ['restaurant_id' => $data['restaurant_id'], 'user_id' => $user->id]);
             throw new AuthorizationException('Unauthorized');
         }
 
@@ -111,6 +113,8 @@ class FoodItemService
             'status' => 'pending',
         ]));
 
+        Log::info('Food item created', ['food_item_id' => $foodItem->id, 'restaurant_id' => $data['restaurant_id'], 'food_code' => $foodCode]);
+
         return $foodItem->load(['restaurant', 'foodCategory']);
     }
 
@@ -128,6 +132,7 @@ class FoodItemService
         $foodItem = $this->foodItemRepository->findWithRelations($id);
 
         if ($foodItem->restaurant->user_id !== $user->id && !$user->isAdmin()) {
+            Log::warning('Food item update unauthorized', ['food_item_id' => $id, 'user_id' => $user->id]);
             throw new AuthorizationException('Unauthorized');
         }
 
@@ -136,6 +141,8 @@ class FoodItemService
         }
 
         $foodItem->update(array_diff_key($data, array_flip(['food_code', 'food_code_status'])));
+
+        Log::info('Food item updated', ['food_item_id' => $id, 'user_id' => $user->id]);
 
         return $foodItem->load(['restaurant', 'foodCategory']);
     }
@@ -152,10 +159,12 @@ class FoodItemService
         $foodItem = $this->foodItemRepository->findWithRelations($id);
 
         if ($foodItem->restaurant->user_id !== $user->id && !$user->isAdmin()) {
+            Log::warning('Food item delete unauthorized', ['food_item_id' => $id, 'user_id' => $user->id]);
             throw new AuthorizationException('Unauthorized');
         }
 
         $foodItem->delete();
+        Log::info('Food item deleted', ['food_item_id' => $id, 'user_id' => $user->id]);
     }
 
     /**
@@ -168,6 +177,8 @@ class FoodItemService
     {
         $foodItem = $this->foodItemRepository->findOrFail($id);
         $foodItem->update(['food_code_status' => 'confirmed', 'status' => 'active']);
+
+        Log::info('Food item code confirmed (admin)', ['food_item_id' => $id]);
 
         return $foodItem;
     }
@@ -193,6 +204,8 @@ class FoodItemService
     {
         $foodItem = $this->foodItemRepository->findOrFail($id);
         $foodItem->update(['status' => $status]);
+
+        Log::info('Food item status updated (admin)', ['food_item_id' => $id, 'status' => $status]);
 
         return $foodItem;
     }
