@@ -21,7 +21,7 @@ class FoodCategorySeeder extends Seeder
                 ],
             ],
             [
-                'code' => 'main_course',
+                'code' => 'maincourse',
                 'sort_order' => 2,
                 'translations' => [
                     'EN' => ['name' => 'Main Course', 'description' => 'Main dishes and entrees'],
@@ -66,7 +66,7 @@ class FoodCategorySeeder extends Seeder
                 ],
             ],
             [
-                'code' => 'side_dish',
+                'code' => 'side_dish',  // 9 chars
                 'sort_order' => 7,
                 'translations' => [
                     'EN' => ['name' => 'Side Dish', 'description' => 'Side dishes and accompaniments'],
@@ -75,7 +75,7 @@ class FoodCategorySeeder extends Seeder
                 ],
             ],
             [
-                'code' => 'noodle_rice',
+                'code' => 'noodlerice',  // 10 chars (max)
                 'sort_order' => 8,
                 'translations' => [
                     'EN' => ['name' => 'Noodles & Rice', 'description' => 'Noodle and rice dishes'],
