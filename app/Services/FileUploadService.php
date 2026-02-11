@@ -82,6 +82,37 @@ class FileUploadService
     }
 
     /**
+     * Upload news images: featured_image (optional, 1 file) + gallery_images (optional, max 10).
+     *
+     * @param UploadedFile|null $featuredImage
+     * @param UploadedFile[]|null $galleryImages
+     * @return array{featured_image: string|null, gallery_images: array}
+     */
+    public function uploadNewsImages(?UploadedFile $featuredImage = null, ?array $galleryImages = null): array
+    {
+        $result = [
+            'featured_image' => null,
+            'gallery_images' => [],
+        ];
+
+        if ($featuredImage) {
+            $result['featured_image'] = $this->processAndStoreImage($featuredImage, 'news-images/featured');
+        }
+        if (! empty($galleryImages)) {
+            foreach ($galleryImages as $image) {
+                $result['gallery_images'][] = $this->processAndStoreImage($image, 'news-images/gallery');
+            }
+        }
+        if ($result['featured_image'] || count($result['gallery_images']) > 0) {
+            Log::info('News images uploaded', [
+                'has_featured' => (bool) $result['featured_image'],
+                'gallery_count' => count($result['gallery_images']),
+            ]);
+        }
+        return $result;
+    }
+
+    /**
      * Resize image (max width 1200, aspect ratio), encode as jpg 85%, store to public disk.
      *
      * @param UploadedFile $image

@@ -161,6 +161,7 @@ Route::middleware('auth:api')->prefix('upload')->group(function () {
     Route::post('/images', [FileUploadController::class, 'uploadImages']);
     Route::post('/restaurant-images', [FileUploadController::class, 'uploadRestaurantImages']);
     Route::post('/food-images', [FileUploadController::class, 'uploadFoodImages']);
+    Route::post('/news-images', [FileUploadController::class, 'uploadNewsImages']);
 });
 
 // ============================================================

@@ -158,12 +158,16 @@ Revokes current access token.
 
 ## News / Course / Chef
 
+**WYSIWYG content:** `title`, `content` and `excerpt` are multilingual (e.g. `content.en`, `content.vn`). `content` and `excerpt` accept **HTML** for rich text (WYSIWYG). The API sanitizes HTML before saving (allowed: `p`, `h1`–`h6`, `ul`, `ol`, `li`, `strong`, `em`, `a`, `img`, `blockquote`, `table`, etc.). Clients should render with `v-html` / `dangerouslySetInnerHTML` or a safe HTML renderer.
+
+**Images:** Use `POST /api/upload/news-images` to upload `featured_image` (1 file) and `gallery_images[]` (max 10). Response returns URLs; put them in the news body as `featured_image` (string) and `gallery_images` (array of URLs).
+
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
 | GET | `/api/news` | No | Published list. Query: `type`, `search`, `per_page` |
 | GET | `/api/news/by-type/{type}` | No | Published by type (news, course, chef) |
 | GET | `/api/news/{id}` | No | Detail (increments view_count) |
-| POST | `/api/news` | Admin | Create |
+| POST | `/api/news` | Admin | Create. Body: type, title, **content** (HTML), excerpt (HTML), status, etc. |
 | PUT | `/api/news/{id}` | Admin | Update |
 | DELETE | `/api/news/{id}` | Admin | Delete |
 
@@ -198,8 +202,9 @@ All upload routes require **auth**.
 | Method | Path | Description |
 |--------|------|-------------|
 | POST | `/api/upload/images` | Generic image upload |
-| POST | `/api/upload/restaurant-images` | Restaurant images |
-| POST | `/api/upload/food-images` | Food item images |
+| POST | `/api/upload/restaurant-images` | Restaurant images (outside/inside) |
+| POST | `/api/upload/food-images` | Food item images (main + extra) |
+| POST | `/api/upload/news-images` | News images: `featured_image` (1 file), `gallery_images[]` (max 10). Returns URLs for `featured_image` and `gallery_images` to use in POST/PUT news. |
 
 ---
 
