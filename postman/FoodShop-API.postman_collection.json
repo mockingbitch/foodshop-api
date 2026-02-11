@@ -634,6 +634,22 @@
             },
             "url": "{{base_url}}/api/upload/food-images"
           }
+        },
+        {
+          "name": "Upload News Images",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "featured_image", "type": "file", "src": [], "description": "Ảnh đại diện (tùy chọn)" },
+                { "key": "gallery_images[]", "type": "file", "src": [], "description": "Tối đa 10 ảnh gallery" }
+              ]
+            },
+            "url": "{{base_url}}/api/upload/news-images",
+            "description": "Upload ảnh cho news. Trả về featured_image (URL) và gallery_images (mảng URL). Dùng URL khi POST/PUT news."
+          }
         }
       ]
     },

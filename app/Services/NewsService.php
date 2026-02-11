@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Contracts\Repositories\NewsRepositoryInterface;
 use App\Models\News;
+use App\Support\HtmlSanitizer;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Log;
 
@@ -64,20 +65,21 @@ class NewsService
     }
 
     /**
-     * Create news/course/chef article.
+     * Create news/course/chef article. Content and excerpt are sanitized for WYSIWYG (safe HTML).
      *
      * @param array $data Validated store data
      * @return News
      */
     public function store(array $data): News
     {
+        $data = $this->sanitizeWysiwygFields($data);
         $news = $this->newsRepository->create($data);
         Log::info('News created', ['news_id' => $news->id, 'type' => $news->type ?? null]);
         return $news;
     }
 
     /**
-     * Update news article.
+     * Update news article. Content and excerpt are sanitized for WYSIWYG (safe HTML).
      *
      * @param int $id
      * @param array $data
@@ -85,10 +87,28 @@ class NewsService
      */
     public function update(int $id, array $data): News
     {
+        $data = $this->sanitizeWysiwygFields($data);
         $news = $this->newsRepository->findOrFail($id);
         $news->update($data);
         Log::info('News updated', ['news_id' => $id]);
         return $news;
+    }
+
+    /**
+     * Sanitize content and excerpt (multilingual HTML) for WYSIWYG display.
+     *
+     * @param array $data
+     * @return array
+     */
+    protected function sanitizeWysiwygFields(array $data): array
+    {
+        if (isset($data['content']) && is_array($data['content'])) {
+            $data['content'] = HtmlSanitizer::sanitizeArray($data['content']);
+        }
+        if (isset($data['excerpt']) && is_array($data['excerpt'])) {
+            $data['excerpt'] = HtmlSanitizer::sanitizeArray($data['excerpt']);
+        }
+        return $data;
     }
 
     /**
