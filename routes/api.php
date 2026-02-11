@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\CountryController;
 use App\Http\Controllers\Api\RestaurantTypeController;
 use App\Http\Controllers\Api\ExchangeRateController;
 use App\Http\Controllers\Api\AdminController;
+use App\Http\Controllers\Api\AdminReviewController;
 use App\Http\Controllers\Api\FileUploadController;
 
 /*
@@ -119,35 +120,20 @@ Route::middleware('auth:api')->prefix('food-items')->group(function () {
 // ============================================================
 // FOOD CATEGORY ROUTES
 // ============================================================
-// Public category routes
+// Public category routes (read-only)
 Route::prefix('food-categories')->group(function () {
     Route::get('/', [FoodCategoryController::class, 'index']);
     Route::get('/{id}', [FoodCategoryController::class, 'show']);
 });
 
-// Protected category routes (Admin)
-Route::middleware('auth:api')->prefix('food-categories')->group(function () {
-    Route::post('/', [FoodCategoryController::class, 'store']);
-    Route::put('/{id}', [FoodCategoryController::class, 'update']);
-    Route::delete('/{id}', [FoodCategoryController::class, 'destroy']);
-    Route::post('/{id}/translations', [FoodCategoryController::class, 'addTranslation']);
-});
-
 // ============================================================
 // NEWS/COURSE/CHEF ROUTES
 // ============================================================
-// Public news routes
+// Public news routes (read-only)
 Route::prefix('news')->group(function () {
     Route::get('/', [NewsController::class, 'index']);
     Route::get('/by-type/{type}', [NewsController::class, 'getByType']);
     Route::get('/{id}', [NewsController::class, 'show']);
-});
-
-// Protected news routes (Admin)
-Route::middleware('auth:api')->prefix('news')->group(function () {
-    Route::post('/', [NewsController::class, 'store']);
-    Route::put('/{id}', [NewsController::class, 'update']);
-    Route::delete('/{id}', [NewsController::class, 'destroy']);
 });
 
 // ============================================================
@@ -180,19 +166,41 @@ Route::middleware('auth:api')->prefix('upload')->group(function () {
 // ============================================================
 // ADMIN ROUTES (Protected - Admin only)
 // ============================================================
-Route::middleware('auth:api')->prefix('admin')->group(function () {
+Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
     // Dashboard
     Route::get('/dashboard/stats', [AdminController::class, 'getStats']);
-    
+
+    // Food Category Management
+    Route::get('/food-categories', [FoodCategoryController::class, 'index']);
+    Route::get('/food-categories/{id}', [FoodCategoryController::class, 'show']);
+    Route::post('/food-categories', [FoodCategoryController::class, 'store']);
+    Route::put('/food-categories/{id}', [FoodCategoryController::class, 'update']);
+    Route::delete('/food-categories/{id}', [FoodCategoryController::class, 'destroy']);
+    Route::post('/food-categories/{id}/translations', [FoodCategoryController::class, 'addTranslation']);
+
+    // News Management
+    Route::get('/news', [NewsController::class, 'index']);
+    Route::get('/news/by-type/{type}', [NewsController::class, 'getByType']);
+    Route::get('/news/{id}', [NewsController::class, 'show']);
+    Route::post('/news', [NewsController::class, 'store']);
+    Route::put('/news/{id}', [NewsController::class, 'update']);
+    Route::delete('/news/{id}', [NewsController::class, 'destroy']);
+
     // Restaurant Management
     Route::get('/restaurants', [AdminRestaurantController::class, 'index']);
     Route::get('/restaurants/{restaurantId}/food-items', [AdminRestaurantController::class, 'getRestaurantFoodItems']);
     Route::put('/restaurants/{id}/status', [AdminRestaurantController::class, 'updateStatus']);
-    
+
     // Food Item Management
     Route::get('/food-items/pending-codes', [FoodItemController::class, 'getPendingFoodCodes']);
     Route::get('/restaurants/{restaurantId}/food-items', [AdminFoodItemController::class, 'getRestaurantFoodItems']);
     Route::put('/food-items/{id}/status', [AdminFoodItemController::class, 'updateStatus']);
+
+    // Review Management
+    Route::get('/reviews', [AdminReviewController::class, 'index']);
+    Route::get('/reviews/{id}', [AdminReviewController::class, 'show']);
+    Route::put('/reviews/{id}/status', [AdminReviewController::class, 'updateStatus']);
+    Route::delete('/reviews/{id}', [AdminReviewController::class, 'destroy']);
 });
 
 // ============================================================

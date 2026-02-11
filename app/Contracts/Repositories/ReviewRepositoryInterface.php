@@ -38,6 +38,14 @@ interface ReviewRepositoryInterface extends BaseRepositoryInterface
      */
     public function createForReviewable(string $reviewableType, int $reviewableId, array $data): Review;
 
+    /**
+     * Paginated list with filters (Admin). Filters: status, reviewable_type, restaurant_id, food_item_id, per_page.
+     *
+     * @param array $filters
+     * @return LengthAwarePaginator
+     */
+    public function indexWithFilters(array $filters): LengthAwarePaginator;
+
     public function count(): int;
 
     public function countPending(): int;
