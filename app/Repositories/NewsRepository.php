@@ -30,16 +30,47 @@ class NewsRepository extends BaseRepository implements NewsRepositoryInterface
         if (!empty($filters['type'])) {
             $query->type($filters['type']);
         }
-        if (!empty($filters['search'])) {
-            $search = $filters['search'];
+        if (! empty($filters['search'])) {
+            $search = '%' . $filters['search'] . '%';
             $query->where(function ($q) use ($search) {
-                $q->whereRaw("JSON_EXTRACT(title, '$.en') LIKE ?", ["%{$search}%"])
-                    ->orWhereRaw("JSON_EXTRACT(title, '$.vn') LIKE ?", ["%{$search}%"])
-                    ->orWhereRaw("JSON_EXTRACT(title, '$.kr') LIKE ?", ["%{$search}%"]);
+                $q->where('title->en', 'like', $search)
+                    ->orWhere('title->vn', 'like', $search)
+                    ->orWhere('title->kr', 'like', $search);
             });
         }
 
         return $query->orderBy('published_at', 'desc')->paginate($filters['per_page'] ?? 15);
+    }
+
+    /**
+     * Paginated list for admin (all statuses). Optional filters: type, search, status, per_page.
+     *
+     * @param array $filters type?, search?, status?, per_page?
+     * @return LengthAwarePaginator
+     */
+    public function getPaginatedForAdmin(array $filters): LengthAwarePaginator
+    {
+        $query = $this->query()->with(['category']);
+
+        if (! empty($filters['type'])) {
+            $query->type($filters['type']);
+        }
+        if (! empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+        if (! empty($filters['search'])) {
+            $search = '%' . $filters['search'] . '%';
+            $query->where(function ($q) use ($search) {
+                $q->where('title->en', 'like', $search)
+                    ->orWhere('title->vn', 'like', $search)
+                    ->orWhere('title->kr', 'like', $search);
+            });
+        }
+
+        $perPage = isset($filters['per_page']) ? (int) $filters['per_page'] : 15;
+        $perPage = min(max($perPage, 1), 100);
+
+        return $query->orderByDesc('updated_at')->paginate($perPage);
     }
 
     /**

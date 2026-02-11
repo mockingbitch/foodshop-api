@@ -19,6 +19,14 @@ interface NewsRepositoryInterface extends BaseRepositoryInterface
     public function getPublishedPaginated(array $filters): LengthAwarePaginator;
 
     /**
+     * Paginated list for admin (all statuses). Filters: type?, search?, status?, per_page?.
+     *
+     * @param array $filters
+     * @return LengthAwarePaginator
+     */
+    public function getPaginatedForAdmin(array $filters): LengthAwarePaginator;
+
+    /**
      * Get published news by type.
      *
      * @param string $type

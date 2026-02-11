@@ -179,7 +179,7 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
     Route::post('/food-categories/{id}/translations', [FoodCategoryController::class, 'addTranslation']);
 
     // News Management
-    Route::get('/news', [NewsController::class, 'index']);
+    Route::get('/news', [NewsController::class, 'adminIndex']);
     Route::get('/news/by-type/{type}', [NewsController::class, 'getByType']);
     Route::get('/news/{id}', [NewsController::class, 'show']);
     Route::post('/news', [NewsController::class, 'store']);
