@@ -20,6 +20,17 @@ class IndexFoodItemsRequest extends FormRequest
     }
 
     /**
+     * Prepare the data for validation (normalize string "true"/"false" to boolean).
+     */
+    protected function prepareForValidation(): void
+    {
+        $merge = $this->normalizeBooleans(['best_seller', 'vegetarian']);
+        if ($merge !== []) {
+            $this->merge($merge);
+        }
+    }
+
+    /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
@@ -34,6 +45,24 @@ class IndexFoodItemsRequest extends FormRequest
             'search' => 'nullable|string|max:255',
             'per_page' => 'nullable|integer|min:1|max:100',
         ];
+    }
+
+    /**
+     * Normalize string "true"/"false" to boolean for given keys.
+     *
+     * @param  array<string>  $keys
+     * @return array<string, bool>
+     */
+    protected function normalizeBooleans(array $keys): array
+    {
+        $merge = [];
+        foreach ($keys as $key) {
+            $value = $this->input($key);
+            if ($value !== null) {
+                $merge[$key] = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? $value;
+            }
+        }
+        return $merge;
     }
 
     /**

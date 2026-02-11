@@ -21,6 +21,17 @@ class UpdateFoodItemRequest extends FormRequest
     }
 
     /**
+     * Prepare the data for validation (normalize string "true"/"false" to boolean).
+     */
+    protected function prepareForValidation(): void
+    {
+        $merge = $this->normalizeBooleans(['is_vegetarian', 'is_best_seller']);
+        if ($merge !== []) {
+            $this->merge($merge);
+        }
+    }
+
+    /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
@@ -35,8 +46,26 @@ class UpdateFoodItemRequest extends FormRequest
             'price' => 'sometimes|numeric|min:0',
             'serving_size' => 'nullable|integer',
             'weight' => 'nullable|integer',
-            'is_vegetarian' => 'boolean',
-            'is_best_seller' => 'boolean',
+            'is_vegetarian' => 'sometimes|boolean',
+            'is_best_seller' => 'sometimes|boolean',
         ];
+    }
+
+    /**
+     * Normalize string "true"/"false" to boolean for given keys.
+     *
+     * @param  array<string>  $keys
+     * @return array<string, bool>
+     */
+    protected function normalizeBooleans(array $keys): array
+    {
+        $merge = [];
+        foreach ($keys as $key) {
+            $value = $this->input($key);
+            if ($value !== null) {
+                $merge[$key] = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? $value;
+            }
+        }
+        return $merge;
     }
 }

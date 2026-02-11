@@ -70,6 +70,39 @@ class ReviewRepository extends BaseRepository implements ReviewRepositoryInterfa
         return $reviewable->reviews()->create($data);
     }
 
+    /**
+     * Paginated list with filters (Admin).
+     *
+     * @param array $filters status, reviewable_type (restaurant|food_item), restaurant_id, food_item_id, per_page
+     * @return LengthAwarePaginator
+     */
+    public function indexWithFilters(array $filters): LengthAwarePaginator
+    {
+        $query = $this->query()->with('reviewable')->latest();
+
+        if (! empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
+        if (! empty($filters['reviewable_type'])) {
+            $type = $filters['reviewable_type'] === 'restaurant' ? Restaurant::class : FoodItem::class;
+            $query->where('reviewable_type', $type);
+        }
+
+        if (! empty($filters['restaurant_id'])) {
+            $query->where('reviewable_type', Restaurant::class)->where('reviewable_id', $filters['restaurant_id']);
+        }
+
+        if (! empty($filters['food_item_id'])) {
+            $query->where('reviewable_type', FoodItem::class)->where('reviewable_id', $filters['food_item_id']);
+        }
+
+        $perPage = (int) ($filters['per_page'] ?? 15);
+        $perPage = min(max($perPage, 1), 100);
+
+        return $query->paginate($perPage);
+    }
+
     /** Count all reviews. */
     public function count(): int
     {

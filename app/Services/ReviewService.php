@@ -75,4 +75,46 @@ class ReviewService
         Log::info('Review created for restaurant', ['review_id' => $review->id, 'restaurant_id' => $restaurantId]);
         return $review;
     }
+
+    /**
+     * Paginated list with filters (Admin).
+     *
+     * @param array $filters status, reviewable_type, restaurant_id, food_item_id, per_page
+     * @return LengthAwarePaginator
+     */
+    public function index(array $filters): LengthAwarePaginator
+    {
+        return $this->reviewRepository->indexWithFilters($filters);
+    }
+
+    /**
+     * Get review by ID (Admin).
+     *
+     * @return Review
+     */
+    public function show(int $id): Review
+    {
+        return $this->reviewRepository->findOrFail($id);
+    }
+
+    /**
+     * Update review status (Admin): approved, pending, rejected.
+     *
+     * @return Review
+     */
+    public function updateStatus(int $id, string $status): Review
+    {
+        $review = $this->reviewRepository->update($id, ['status' => $status]);
+        Log::info('Review status updated', ['review_id' => $id, 'status' => $status]);
+        return $review;
+    }
+
+    /**
+     * Delete review (Admin).
+     */
+    public function destroy(int $id): void
+    {
+        $this->reviewRepository->delete($id);
+        Log::info('Review deleted', ['review_id' => $id]);
+    }
 }
