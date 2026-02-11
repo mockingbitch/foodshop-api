@@ -17,7 +17,7 @@ class NewsService
     ) {}
 
     /**
-     * Paginated list of published news with optional type and search.
+     * Paginated list of published news with optional type and search (public).
      *
      * @param array $filters type?, search?, per_page?
      * @return LengthAwarePaginator
@@ -25,6 +25,17 @@ class NewsService
     public function index(array $filters): LengthAwarePaginator
     {
         return $this->newsRepository->getPublishedPaginated($filters);
+    }
+
+    /**
+     * Paginated list for admin (all statuses). Filters: type?, search?, status?, per_page?.
+     *
+     * @param array $filters
+     * @return LengthAwarePaginator
+     */
+    public function adminIndex(array $filters): LengthAwarePaginator
+    {
+        return $this->newsRepository->getPaginatedForAdmin($filters);
     }
 
     /**
