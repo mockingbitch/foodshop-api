@@ -27,7 +27,7 @@ class FoodItemRepository extends BaseRepository implements FoodItemRepositoryInt
     public function getActiveConfirmedPaginated(array $filters): LengthAwarePaginator|EloquentCollection
     {
         $query = $this->query()
-            ->with(['restaurant', 'foodCategory'])
+            ->with(['restaurant', 'foodCategory.translations'])
             ->active()
             ->confirmedCode();
 
@@ -68,7 +68,7 @@ class FoodItemRepository extends BaseRepository implements FoodItemRepositoryInt
     public function getByCategory(int $categoryId): LengthAwarePaginator
     {
         return $this->query()
-            ->with(['restaurant', 'foodCategory'])
+            ->with(['restaurant', 'foodCategory.translations'])
             ->active()
             ->confirmedCode()
             ->where('food_category_id', $categoryId)
@@ -84,7 +84,7 @@ class FoodItemRepository extends BaseRepository implements FoodItemRepositoryInt
     public function getBestSellerPaginated(array $filters): LengthAwarePaginator|EloquentCollection
     {
         $query = $this->query()
-            ->with(['restaurant', 'foodCategory'])
+            ->with(['restaurant', 'foodCategory.translations'])
             ->active()
             ->confirmedCode()
             ->bestSeller();
@@ -108,7 +108,7 @@ class FoodItemRepository extends BaseRepository implements FoodItemRepositoryInt
     public function findWithRelations(int $id): FoodItem
     {
         return $this->query()
-            ->with(['restaurant', 'foodCategory', 'reviews'])
+            ->with(['restaurant', 'foodCategory.translations', 'reviews'])
             ->findOrFail($id);
     }
 
@@ -122,7 +122,7 @@ class FoodItemRepository extends BaseRepository implements FoodItemRepositoryInt
     public function getRelatedByCategory(int $foodCategoryId, int $excludeId): EloquentCollection
     {
         return $this->query()
-            ->with(['restaurant'])
+            ->with(['restaurant', 'foodCategory.translations'])
             ->active()
             ->confirmedCode()
             ->where('food_category_id', $foodCategoryId)
@@ -140,7 +140,7 @@ class FoodItemRepository extends BaseRepository implements FoodItemRepositoryInt
     public function getPendingCodeConfirmation(int $perPage = 20): LengthAwarePaginator
     {
         return $this->query()
-            ->with(['restaurant', 'foodCategory'])
+            ->with(['restaurant', 'foodCategory.translations'])
             ->pendingCodeConfirmation()
             ->paginate($perPage);
     }
@@ -155,7 +155,7 @@ class FoodItemRepository extends BaseRepository implements FoodItemRepositoryInt
     public function getByRestaurantId(int $restaurantId, array $filters = []): LengthAwarePaginator
     {
         $query = $this->query()
-            ->with(['foodCategory'])
+            ->with(['foodCategory.translations'])
             ->where('restaurant_id', $restaurantId);
 
         if (!empty($filters['status'])) {
