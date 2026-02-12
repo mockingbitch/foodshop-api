@@ -7,7 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 /**
  * Form request for listing/searching food items (query params).
  *
- * Validates: restaurant_id, category_id, best_seller, vegetarian, search, per_page
+ * Validates: restaurant_id, category_id, best_seller, vegetarian, search, per_page, group_by
  */
 class IndexFoodItemsRequest extends FormRequest
 {
@@ -24,7 +24,7 @@ class IndexFoodItemsRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
-        $merge = $this->normalizeBooleans(['best_seller', 'vegetarian']);
+        $merge = $this->normalizeBooleans(['best_seller', 'vegetarian', 'group_by_category']);
         if ($merge !== []) {
             $this->merge($merge);
         }
@@ -50,6 +50,8 @@ class IndexFoodItemsRequest extends FormRequest
                     $fail('The per_page must be between 1 and 100 or "all".');
                 }
             }],
+            'group_by' => 'nullable|string|in:category',
+            'group_by_category' => 'nullable|boolean',
         ];
     }
 
@@ -74,11 +76,15 @@ class IndexFoodItemsRequest extends FormRequest
     /**
      * Get filters array for FoodItemService::index (with proper types).
      *
-     * @return array{restaurant_id?: int, category_id?: int, best_seller?: bool, vegetarian?: bool, search?: string, per_page?: int|string}
+     * @return array{restaurant_id?: int, category_id?: int, best_seller?: bool, vegetarian?: bool, search?: string, per_page?: int|string, group_by?: string}
      */
     public function filters(): array
     {
         $validated = $this->validated();
+        $groupBy = $validated['group_by'] ?? null;
+        if ($groupBy === null && $this->boolean('group_by_category')) {
+            $groupBy = 'category';
+        }
 
         return [
             'restaurant_id' => $validated['restaurant_id'] ?? null,
@@ -87,6 +93,7 @@ class IndexFoodItemsRequest extends FormRequest
             'vegetarian' => $this->boolean('vegetarian'),
             'search' => $validated['search'] ?? null,
             'per_page' => $validated['per_page'] ?? null,
+            'group_by' => $groupBy,
         ];
     }
 }

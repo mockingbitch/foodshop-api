@@ -217,7 +217,7 @@
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
             "url": "{{base_url}}/api/restaurants?country_id=1&restaurant_type_id=1&delivery_available=&search=&per_page=15",
-            "description": "Danh sách nhà hàng active. Query: country_id, restaurant_type_id, delivery_available, search, per_page."
+            "description": "Danh sách nhà hàng active. Query: country_id, restaurant_type_id, delivery_available, search, per_page (1-100 hoặc all để bỏ phân trang)."
           }
         },
         {
@@ -226,7 +226,8 @@
             "auth": { "type": "noauth" },
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/api/restaurants/search?name=pizza&per_page=15"
+            "url": "{{base_url}}/api/restaurants/search?name=pizza&per_page=15",
+            "description": "Tìm nhà hàng theo tên. per_page: 1-100 hoặc all (bỏ phân trang)."
           }
         },
         {
@@ -333,7 +334,18 @@
             "auth": { "type": "noauth" },
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/api/food-items?restaurant_id=&category_id=&best_seller=&vegetarian=&search=&per_page=15"
+            "url": "{{base_url}}/api/food-items?restaurant_id=&category_id=&best_seller=&vegetarian=&search=&per_page=15",
+            "description": "Danh sách món ăn. Query: restaurant_id, category_id, best_seller, vegetarian, search, per_page (1-100 hoặc all), group_by=category hoặc group_by_category=true để nhóm theo danh mục."
+          }
+        },
+        {
+          "name": "List Food Items (Group by Category)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/food-items?per_page=all&group_by=category",
+            "description": "Danh sách món ăn nhóm theo category. Trả về data: [{ category, items }]. Có thể thêm restaurant_id, search, ..."
           }
         },
         {
@@ -342,7 +354,8 @@
             "auth": { "type": "noauth" },
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/api/food-items/search?search=&per_page=15"
+            "url": "{{base_url}}/api/food-items/search?search=&per_page=15",
+            "description": "Tìm món ăn (delegate List Food Items). per_page: 1-100 hoặc all."
           }
         },
         {
@@ -360,7 +373,8 @@
             "auth": { "type": "noauth" },
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/api/food-items/best-seller?restaurant_id=&per_page=15"
+            "url": "{{base_url}}/api/food-items/best-seller?restaurant_id=&per_page=15",
+            "description": "Món bán chạy. restaurant_id (tùy chọn), per_page: 1-100 hoặc all."
           }
         },
         {
@@ -481,7 +495,8 @@
             "auth": { "type": "noauth" },
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/api/news?type=news&search=&per_page=15"
+            "url": "{{base_url}}/api/news?type=news&search=&per_page=15",
+            "description": "Danh sách tin đã publish. type, search, per_page (1-100 hoặc all)."
           }
         },
         {
@@ -753,7 +768,8 @@
               "request": {
                 "method": "GET",
                 "header": [{ "key": "Accept", "value": "application/json" }],
-                "url": "{{base_url}}/api/admin/news?type=news&search=&per_page=15"
+                "url": "{{base_url}}/api/admin/news?type=news&search=&per_page=15",
+                "description": "Danh sách tin (Admin). type, search, status, per_page (1-100 hoặc all)."
               }
             },
             {
@@ -821,7 +837,7 @@
                 "method": "GET",
                 "header": [{ "key": "Accept", "value": "application/json" }],
                 "url": "{{base_url}}/api/admin/restaurants?status=&per_page=15",
-                "description": "status: active | hidden | pending"
+                "description": "Danh sách nhà hàng (Admin). status: active | hidden | pending. per_page: 1-100 hoặc all."
               }
             },
             {
@@ -896,7 +912,7 @@
                 "method": "GET",
                 "header": [{ "key": "Accept", "value": "application/json" }],
                 "url": "{{base_url}}/api/admin/reviews?status=&reviewable_type=&restaurant_id=&food_item_id=&per_page=15",
-                "description": "status: approved | pending | rejected. reviewable_type: restaurant | food_item"
+                "description": "Danh sách đánh giá (Admin). status: approved | pending | rejected. reviewable_type: restaurant | food_item. per_page: 1-100 hoặc all."
               }
             },
             {
