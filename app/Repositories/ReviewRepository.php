@@ -7,6 +7,7 @@ use App\Models\FoodItem;
 use App\Models\Review;
 use App\Models\Restaurant;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 
 /**
  * Review repository: Eloquent query layer for Review (polymorphic: FoodItem, Restaurant).
@@ -71,12 +72,12 @@ class ReviewRepository extends BaseRepository implements ReviewRepositoryInterfa
     }
 
     /**
-     * Paginated list with filters (Admin).
+     * List with filters (Admin). Paginated unless per_page=all.
      *
-     * @param array $filters status, reviewable_type (restaurant|food_item), restaurant_id, food_item_id, per_page
-     * @return LengthAwarePaginator
+     * @param array $filters status, reviewable_type (restaurant|food_item), restaurant_id, food_item_id, per_page (int or 'all')
+     * @return LengthAwarePaginator|EloquentCollection
      */
-    public function indexWithFilters(array $filters): LengthAwarePaginator
+    public function indexWithFilters(array $filters): LengthAwarePaginator|EloquentCollection
     {
         $query = $this->query()->with('reviewable')->latest();
 
@@ -97,9 +98,11 @@ class ReviewRepository extends BaseRepository implements ReviewRepositoryInterfa
             $query->where('reviewable_type', FoodItem::class)->where('reviewable_id', $filters['food_item_id']);
         }
 
+        if (isset($filters['per_page']) && (string) $filters['per_page'] === 'all') {
+            return $query->get();
+        }
         $perPage = (int) ($filters['per_page'] ?? 15);
         $perPage = min(max($perPage, 1), 100);
-
         return $query->paginate($perPage);
     }
 

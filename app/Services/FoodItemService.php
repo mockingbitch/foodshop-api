@@ -27,12 +27,12 @@ class FoodItemService
     ) {}
 
     /**
-     * Paginated list of active food items with confirmed code and optional filters.
+     * List of active food items with confirmed code and optional filters. Paginated unless per_page=all.
      *
-     * @param array $filters restaurant_id?, category_id?, best_seller?, vegetarian?, search?, per_page?
-     * @return LengthAwarePaginator
+     * @param array $filters restaurant_id?, category_id?, best_seller?, vegetarian?, search?, per_page? (int or 'all')
+     * @return LengthAwarePaginator|Collection
      */
-    public function index(array $filters): LengthAwarePaginator
+    public function index(array $filters): LengthAwarePaginator|Collection
     {
         return $this->foodItemRepository->getActiveConfirmedPaginated($filters);
     }
@@ -49,12 +49,12 @@ class FoodItemService
     }
 
     /**
-     * Get best seller food items with optional restaurant filter.
+     * Get best seller food items with optional restaurant filter. Paginated unless per_page=all.
      *
-     * @param array $filters restaurant_id?, per_page?
-     * @return LengthAwarePaginator
+     * @param array $filters restaurant_id?, per_page? (int or 'all')
+     * @return LengthAwarePaginator|Collection
      */
-    public function getBestSeller(array $filters): LengthAwarePaginator
+    public function getBestSeller(array $filters): LengthAwarePaginator|Collection
     {
         return $this->foodItemRepository->getBestSellerPaginated($filters);
     }

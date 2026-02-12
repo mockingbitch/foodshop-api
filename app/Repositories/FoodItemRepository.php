@@ -5,7 +5,7 @@ namespace App\Repositories;
 use App\Contracts\Repositories\FoodItemRepositoryInterface;
 use App\Models\FoodItem;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 
 /**
  * Food item repository: Eloquent query layer for FoodItem model.
@@ -19,12 +19,12 @@ class FoodItemRepository extends BaseRepository implements FoodItemRepositoryInt
     }
 
     /**
-     * Paginated list of active food items with confirmed code and filters.
+     * List of active food items with confirmed code and filters. Paginated unless per_page=all.
      *
-     * @param array $filters restaurant_id?, category_id?, best_seller?, vegetarian?, search?, per_page?
-     * @return LengthAwarePaginator
+     * @param array $filters restaurant_id?, category_id?, best_seller?, vegetarian?, search?, per_page? (int or 'all')
+     * @return LengthAwarePaginator|EloquentCollection
      */
-    public function getActiveConfirmedPaginated(array $filters): LengthAwarePaginator
+    public function getActiveConfirmedPaginated(array $filters): LengthAwarePaginator|EloquentCollection
     {
         $query = $this->query()
             ->with(['restaurant', 'foodCategory'])
@@ -43,21 +43,24 @@ class FoodItemRepository extends BaseRepository implements FoodItemRepositoryInt
         if (!empty($filters['vegetarian'])) {
             $query->vegetarian();
         }
-        if (!empty($filters['search'])) {
-            $search = $filters['search'];
+        if (! empty($filters['search'])) {
+            $search = '%' . $filters['search'] . '%';
             $query->where(function ($q) use ($search) {
-                $q->whereRaw("JSON_EXTRACT(name, '$.en') LIKE ?", ["%{$search}%"])
-                    ->orWhereRaw("JSON_EXTRACT(name, '$.vn') LIKE ?", ["%{$search}%"])
-                    ->orWhereRaw("JSON_EXTRACT(name, '$.kr') LIKE ?", ["%{$search}%"])
-                    ->orWhere('food_code', 'LIKE', "%{$search}%");
+                $q->where('name->en', 'like', $search)
+                    ->orWhere('name->vn', 'like', $search)
+                    ->orWhere('name->kr', 'like', $search)
+                    ->orWhere('food_code', 'like', $search);
             });
         }
 
-        return $query->paginate($filters['per_page'] ?? 15);
+        if (isset($filters['per_page']) && (string) $filters['per_page'] === 'all') {
+            return $query->get();
+        }
+        return $query->paginate((int) ($filters['per_page'] ?? 15));
     }
 
     /**
-     * Get active confirmed food items by category ID.
+     * Get active confirmed food items by category ID (paginated).
      *
      * @param int $categoryId
      * @return LengthAwarePaginator
@@ -73,12 +76,12 @@ class FoodItemRepository extends BaseRepository implements FoodItemRepositoryInt
     }
 
     /**
-     * Get best seller food items with optional restaurant filter.
+     * Get best seller food items with optional restaurant filter. Paginated unless per_page=all.
      *
-     * @param array $filters restaurant_id?, per_page?
-     * @return LengthAwarePaginator
+     * @param array $filters restaurant_id?, per_page? (int or 'all')
+     * @return LengthAwarePaginator|EloquentCollection
      */
-    public function getBestSellerPaginated(array $filters): LengthAwarePaginator
+    public function getBestSellerPaginated(array $filters): LengthAwarePaginator|EloquentCollection
     {
         $query = $this->query()
             ->with(['restaurant', 'foodCategory'])
@@ -90,7 +93,10 @@ class FoodItemRepository extends BaseRepository implements FoodItemRepositoryInt
             $query->where('restaurant_id', $filters['restaurant_id']);
         }
 
-        return $query->paginate($filters['per_page'] ?? 15);
+        if (isset($filters['per_page']) && (string) $filters['per_page'] === 'all') {
+            return $query->get();
+        }
+        return $query->paginate((int) ($filters['per_page'] ?? 15));
     }
 
     /**
@@ -113,7 +119,7 @@ class FoodItemRepository extends BaseRepository implements FoodItemRepositoryInt
      * @param int $excludeId
      * @return Collection
      */
-    public function getRelatedByCategory(int $foodCategoryId, int $excludeId): Collection
+    public function getRelatedByCategory(int $foodCategoryId, int $excludeId): EloquentCollection
     {
         return $this->query()
             ->with(['restaurant'])

@@ -22,13 +22,13 @@ class FoodItemController extends BaseApiController
     ) {}
 
     /**
-     * Get List of Food Items (paginated, filters: restaurant_id, category_id, best_seller, vegetarian, search, per_page)
+     * Get List of Food Items (paginated unless per_page=all; filters: restaurant_id, category_id, best_seller, vegetarian, search, per_page)
      */
     public function index(IndexFoodItemsRequest $request): JsonResponse
     {
         $foodItems = $this->foodItemService->index($request->filters());
 
-        return $this->success($foodItems);
+        return $this->successList($foodItems);
     }
 
     /**
@@ -50,13 +50,13 @@ class FoodItemController extends BaseApiController
     }
 
     /**
-     * Get best seller food items (optional restaurant_id filter)
+     * Get best seller food items (optional restaurant_id filter; per_page=all to disable pagination)
      */
     public function getBestSeller(Request $request): JsonResponse
     {
         $foodItems = $this->foodItemService->getBestSeller($request->only(['restaurant_id', 'per_page']));
 
-        return $this->success($foodItems);
+        return $this->successList($foodItems);
     }
 
     /**

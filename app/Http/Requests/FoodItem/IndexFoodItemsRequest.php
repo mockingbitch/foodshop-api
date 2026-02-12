@@ -43,7 +43,13 @@ class IndexFoodItemsRequest extends FormRequest
             'best_seller' => 'nullable|boolean',
             'vegetarian' => 'nullable|boolean',
             'search' => 'nullable|string|max:255',
-            'per_page' => 'nullable|integer|min:1|max:100',
+            'per_page' => ['nullable', function ($attribute, $value, $fail) {
+                if ($value === null || $value === '') return;
+                if (is_string($value) && strtolower($value) === 'all') return;
+                if (!is_numeric($value) || ($v = (int) $value) < 1 || $v > 100) {
+                    $fail('The per_page must be between 1 and 100 or "all".');
+                }
+            }],
         ];
     }
 
@@ -68,7 +74,7 @@ class IndexFoodItemsRequest extends FormRequest
     /**
      * Get filters array for FoodItemService::index (with proper types).
      *
-     * @return array{restaurant_id?: int, category_id?: int, best_seller?: bool, vegetarian?: bool, search?: string, per_page?: int}
+     * @return array{restaurant_id?: int, category_id?: int, best_seller?: bool, vegetarian?: bool, search?: string, per_page?: int|string}
      */
     public function filters(): array
     {

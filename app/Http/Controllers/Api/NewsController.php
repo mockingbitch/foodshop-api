@@ -21,23 +21,23 @@ class NewsController extends BaseApiController
     ) {}
 
     /**
-     * Get list of published news (filters: type, search, per_page). Public.
+     * Get list of published news (filters: type, search, per_page; per_page=all to disable pagination). Public.
      */
     public function index(Request $request): JsonResponse
     {
         $news = $this->newsService->index($request->only(['type', 'search', 'per_page']));
 
-        return $this->success($news);
+        return $this->successList($news);
     }
 
     /**
-     * Get list of all news for admin (draft + published + archived). Filters: type, search, status, per_page.
+     * Get list of all news for admin (draft + published + archived). Filters: type, search, status, per_page (or per_page=all).
      */
     public function adminIndex(Request $request): JsonResponse
     {
         $news = $this->newsService->adminIndex($request->only(['type', 'search', 'status', 'per_page']));
 
-        return $this->success($news);
+        return $this->successList($news);
     }
 
     /**

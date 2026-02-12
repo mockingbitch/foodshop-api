@@ -5,7 +5,7 @@ namespace App\Repositories;
 use App\Contracts\Repositories\RestaurantRepositoryInterface;
 use App\Models\Restaurant;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 
 /**
  * Restaurant repository: Eloquent query layer for Restaurant model.
@@ -19,57 +19,63 @@ class RestaurantRepository extends BaseRepository implements RestaurantRepositor
     }
 
     /**
-     * Paginated list of active restaurants with filters.
+     * List of active restaurants with filters. Paginated unless per_page=all.
      *
-     * @param array $filters country_id?, restaurant_type_id?, delivery_available?, search?, per_page?
-     * @return LengthAwarePaginator
+     * @param array $filters country_id?, restaurant_type_id?, delivery_available?, search?, per_page? (int or 'all')
+     * @return LengthAwarePaginator|EloquentCollection
      */
-    public function getActivePaginated(array $filters): LengthAwarePaginator
+    public function getActivePaginated(array $filters): LengthAwarePaginator|EloquentCollection
     {
         $query = $this->query()->with(['country', 'restaurantType', 'user'])->active();
 
-        if (!empty($filters['country_id'])) {
+        if (! empty($filters['country_id'])) {
             $query->where('country_id', $filters['country_id']);
         }
-        if (!empty($filters['restaurant_type_id'])) {
+        if (! empty($filters['restaurant_type_id'])) {
             $query->where('restaurant_type_id', $filters['restaurant_type_id']);
         }
         if (isset($filters['delivery_available'])) {
             $query->where('delivery_available', (bool) $filters['delivery_available']);
         }
-        if (!empty($filters['search'])) {
-            $search = $filters['search'];
+        if (! empty($filters['search'])) {
+            $search = '%' . $filters['search'] . '%';
             $query->where(function ($q) use ($search) {
-                $q->whereRaw("JSON_EXTRACT(name, '$.en') LIKE ?", ["%{$search}%"])
-                    ->orWhereRaw("JSON_EXTRACT(name, '$.vn') LIKE ?", ["%{$search}%"])
-                    ->orWhereRaw("JSON_EXTRACT(name, '$.kr') LIKE ?", ["%{$search}%"])
-                    ->orWhere('city', 'LIKE', "%{$search}%");
+                $q->where('name->en', 'like', $search)
+                    ->orWhere('name->vn', 'like', $search)
+                    ->orWhere('name->kr', 'like', $search)
+                    ->orWhere('city', 'like', $search);
             });
         }
 
-        return $query->paginate($filters['per_page'] ?? 15);
+        if (isset($filters['per_page']) && (string) $filters['per_page'] === 'all') {
+            return $query->get();
+        }
+        return $query->paginate((int) ($filters['per_page'] ?? 15));
     }
 
     /**
-     * Search active restaurants by name (JSON fields).
+     * Search active restaurants by name (JSON fields). Paginated unless per_page=all.
      *
-     * @param array $filters name?, per_page?
-     * @return LengthAwarePaginator
+     * @param array $filters name?, per_page? (int or 'all')
+     * @return LengthAwarePaginator|EloquentCollection
      */
-    public function searchByName(array $filters): LengthAwarePaginator
+    public function searchByName(array $filters): LengthAwarePaginator|EloquentCollection
     {
         $query = $this->query()->with(['country', 'restaurantType'])->active();
 
-        if (!empty($filters['name'])) {
-            $name = $filters['name'];
+        if (! empty($filters['name'])) {
+            $name = '%' . $filters['name'] . '%';
             $query->where(function ($q) use ($name) {
-                $q->whereRaw("JSON_EXTRACT(name, '$.en') LIKE ?", ["%{$name}%"])
-                    ->orWhereRaw("JSON_EXTRACT(name, '$.vn') LIKE ?", ["%{$name}%"])
-                    ->orWhereRaw("JSON_EXTRACT(name, '$.kr') LIKE ?", ["%{$name}%"]);
+                $q->where('name->en', 'like', $name)
+                    ->orWhere('name->vn', 'like', $name)
+                    ->orWhere('name->kr', 'like', $name);
             });
         }
 
-        return $query->paginate($filters['per_page'] ?? 15);
+        if (isset($filters['per_page']) && (string) $filters['per_page'] === 'all') {
+            return $query->get();
+        }
+        return $query->paginate((int) ($filters['per_page'] ?? 15));
     }
 
     /**
@@ -78,9 +84,9 @@ class RestaurantRepository extends BaseRepository implements RestaurantRepositor
      * @param float $latitude
      * @param float $longitude
      * @param float $radiusKm
-     * @return Collection
+     * @return EloquentCollection
      */
-    public function getNearby(float $latitude, float $longitude, float $radiusKm): Collection
+    public function getNearby(float $latitude, float $longitude, float $radiusKm): EloquentCollection
     {
         return $this->query()
             ->with(['country', 'restaurantType'])
@@ -103,20 +109,23 @@ class RestaurantRepository extends BaseRepository implements RestaurantRepositor
     }
 
     /**
-     * Get all restaurants (admin) with optional status filter.
+     * Get all restaurants (admin) with optional status filter. Paginated unless per_page=all.
      *
-     * @param array $filters status?, per_page?
-     * @return LengthAwarePaginator
+     * @param array $filters status?, per_page? (int or 'all')
+     * @return LengthAwarePaginator|EloquentCollection
      */
-    public function getAllPaginated(array $filters): LengthAwarePaginator
+    public function getAllPaginated(array $filters): LengthAwarePaginator|EloquentCollection
     {
         $query = $this->query()->with(['country', 'restaurantType', 'user']);
 
-        if (!empty($filters['status'])) {
+        if (! empty($filters['status'])) {
             $query->where('status', $filters['status']);
         }
 
-        return $query->paginate($filters['per_page'] ?? 15);
+        if (isset($filters['per_page']) && (string) $filters['per_page'] === 'all') {
+            return $query->get();
+        }
+        return $query->paginate((int) ($filters['per_page'] ?? 15));
     }
 
     /**

@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Contracts\Repositories\NewsRepositoryInterface;
 use App\Models\News;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 
 /**
  * News repository: Eloquent query layer for News (news/course/chef).
@@ -18,12 +19,12 @@ class NewsRepository extends BaseRepository implements NewsRepositoryInterface
     }
 
     /**
-     * Paginated list of published news with optional type and search.
+     * List of published news with optional type and search. Paginated unless per_page=all.
      *
-     * @param array $filters type?, search?, per_page?
-     * @return LengthAwarePaginator
+     * @param array $filters type?, search?, per_page? (int or 'all')
+     * @return LengthAwarePaginator|EloquentCollection
      */
-    public function getPublishedPaginated(array $filters): LengthAwarePaginator
+    public function getPublishedPaginated(array $filters): LengthAwarePaginator|EloquentCollection
     {
         $query = $this->query()->with(['category'])->published();
 
@@ -39,16 +40,21 @@ class NewsRepository extends BaseRepository implements NewsRepositoryInterface
             });
         }
 
-        return $query->orderBy('published_at', 'desc')->paginate($filters['per_page'] ?? 15);
+        $query->orderBy('published_at', 'desc');
+
+        if (isset($filters['per_page']) && (string) $filters['per_page'] === 'all') {
+            return $query->get();
+        }
+        return $query->paginate((int) ($filters['per_page'] ?? 15));
     }
 
     /**
-     * Paginated list for admin (all statuses). Optional filters: type, search, status, per_page.
+     * List for admin (all statuses). Optional filters: type, search, status, per_page. Paginated unless per_page=all.
      *
-     * @param array $filters type?, search?, status?, per_page?
-     * @return LengthAwarePaginator
+     * @param array $filters type?, search?, status?, per_page? (int or 'all')
+     * @return LengthAwarePaginator|EloquentCollection
      */
-    public function getPaginatedForAdmin(array $filters): LengthAwarePaginator
+    public function getPaginatedForAdmin(array $filters): LengthAwarePaginator|EloquentCollection
     {
         $query = $this->query()->with(['category']);
 
@@ -67,10 +73,14 @@ class NewsRepository extends BaseRepository implements NewsRepositoryInterface
             });
         }
 
+        $query->orderByDesc('updated_at');
+
+        if (isset($filters['per_page']) && (string) $filters['per_page'] === 'all') {
+            return $query->get();
+        }
         $perPage = isset($filters['per_page']) ? (int) $filters['per_page'] : 15;
         $perPage = min(max($perPage, 1), 100);
-
-        return $query->orderByDesc('updated_at')->paginate($perPage);
+        return $query->paginate($perPage);
     }
 
     /**
