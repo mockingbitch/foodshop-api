@@ -6,6 +6,7 @@ use App\Contracts\Repositories\NewsRepositoryInterface;
 use App\Models\News;
 use App\Support\HtmlSanitizer;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -18,23 +19,23 @@ class NewsService
     ) {}
 
     /**
-     * Paginated list of published news with optional type and search (public).
+     * List of published news with optional type and search (public). Paginated unless per_page=all.
      *
-     * @param array $filters type?, search?, per_page?
-     * @return LengthAwarePaginator
+     * @param array $filters type?, search?, per_page? (int or 'all')
+     * @return LengthAwarePaginator|Collection
      */
-    public function index(array $filters): LengthAwarePaginator
+    public function index(array $filters): LengthAwarePaginator|Collection
     {
         return $this->newsRepository->getPublishedPaginated($filters);
     }
 
     /**
-     * Paginated list for admin (all statuses). Filters: type?, search?, status?, per_page?.
+     * List for admin (all statuses). Filters: type?, search?, status?, per_page?. Paginated unless per_page=all.
      *
      * @param array $filters
-     * @return LengthAwarePaginator
+     * @return LengthAwarePaginator|Collection
      */
-    public function adminIndex(array $filters): LengthAwarePaginator
+    public function adminIndex(array $filters): LengthAwarePaginator|Collection
     {
         return $this->newsRepository->getPaginatedForAdmin($filters);
     }

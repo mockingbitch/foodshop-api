@@ -6,6 +6,7 @@ use App\Contracts\Repositories\ExchangeRateRepositoryInterface;
 use App\Contracts\Repositories\FoodCategoryRepositoryInterface;
 use App\Contracts\Repositories\FoodItemRepositoryInterface;
 use App\Contracts\Repositories\RestaurantRepositoryInterface;
+use App\Models\FoodCategory;
 use App\Models\FoodItem;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -27,14 +28,45 @@ class FoodItemService
     ) {}
 
     /**
-     * Paginated list of active food items with confirmed code and optional filters.
+     * List of active food items with confirmed code and optional filters. Paginated unless per_page=all.
+     * When group_by=category, returns all items grouped by category (per_page ignored).
      *
-     * @param array $filters restaurant_id?, category_id?, best_seller?, vegetarian?, search?, per_page?
-     * @return LengthAwarePaginator
+     * @param array $filters restaurant_id?, category_id?, best_seller?, vegetarian?, search?, per_page?, group_by? ('category')
+     * @return LengthAwarePaginator|Collection|array
      */
-    public function index(array $filters): LengthAwarePaginator
+    public function index(array $filters): LengthAwarePaginator|Collection|array
     {
+        if (! empty($filters['group_by']) && $filters['group_by'] === 'category') {
+            return $this->indexGroupedByCategory($filters);
+        }
         return $this->foodItemRepository->getActiveConfirmedPaginated($filters);
+    }
+
+    /**
+     * Get food items grouped by category. Uses per_page=all internally.
+     *
+     * @return array{grouped: true, data: array<int, array{category: FoodCategory, items: array}>, total: int}
+     */
+    private function indexGroupedByCategory(array $filters): array
+    {
+        $filtersForAll = array_merge($filters, ['per_page' => 'all']);
+        unset($filtersForAll['group_by']);
+        $collection = $this->foodItemRepository->getActiveConfirmedPaginated($filtersForAll);
+        if (! $collection instanceof Collection) {
+            $collection = $collection->getCollection();
+        }
+        $grouped = $collection->groupBy('food_category_id');
+        $categoryIds = $grouped->keys()->map(fn ($id) => (int) $id)->filter(fn ($id) => $id > 0)->unique()->values()->all();
+        if (empty($categoryIds)) {
+            return ['grouped' => true, 'data' => [], 'total' => 0];
+        }
+        $categories = FoodCategory::with('translations')->whereIn('id', $categoryIds)->orderBy('sort_order')->get();
+        $data = $categories->map(fn (FoodCategory $cat) => [
+            'category' => $cat,
+            'items' => $grouped->get((string) $cat->id, collect())->values()->all(),
+        ])->values()->all();
+
+        return ['grouped' => true, 'data' => $data, 'total' => $collection->count()];
     }
 
     /**
@@ -49,12 +81,12 @@ class FoodItemService
     }
 
     /**
-     * Get best seller food items with optional restaurant filter.
+     * Get best seller food items with optional restaurant filter. Paginated unless per_page=all.
      *
-     * @param array $filters restaurant_id?, per_page?
-     * @return LengthAwarePaginator
+     * @param array $filters restaurant_id?, per_page? (int or 'all')
+     * @return LengthAwarePaginator|Collection
      */
-    public function getBestSeller(array $filters): LengthAwarePaginator
+    public function getBestSeller(array $filters): LengthAwarePaginator|Collection
     {
         return $this->foodItemRepository->getBestSellerPaginated($filters);
     }

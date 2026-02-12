@@ -7,6 +7,7 @@ use App\Models\FoodItem;
 use App\Models\Review;
 use App\Models\Restaurant;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -77,12 +78,12 @@ class ReviewService
     }
 
     /**
-     * Paginated list with filters (Admin).
+     * List with filters (Admin). Paginated unless per_page=all.
      *
-     * @param array $filters status, reviewable_type, restaurant_id, food_item_id, per_page
-     * @return LengthAwarePaginator
+     * @param array $filters status, reviewable_type, restaurant_id, food_item_id, per_page (int or 'all')
+     * @return LengthAwarePaginator|Collection
      */
-    public function index(array $filters): LengthAwarePaginator
+    public function index(array $filters): LengthAwarePaginator|Collection
     {
         return $this->reviewRepository->indexWithFilters($filters);
     }

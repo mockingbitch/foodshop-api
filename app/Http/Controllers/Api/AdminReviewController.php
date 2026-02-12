@@ -20,7 +20,7 @@ class AdminReviewController extends BaseApiController
     ) {}
 
     /**
-     * Get list of all reviews (Admin). Filters: status, reviewable_type, restaurant_id, food_item_id, per_page
+     * Get list of all reviews (Admin). Filters: status, reviewable_type, restaurant_id, food_item_id, per_page (or per_page=all)
      */
     public function index(Request $request): JsonResponse
     {
@@ -32,7 +32,7 @@ class AdminReviewController extends BaseApiController
             'per_page',
         ]));
 
-        return $this->success($reviews);
+        return $this->successList($reviews);
     }
 
     /**

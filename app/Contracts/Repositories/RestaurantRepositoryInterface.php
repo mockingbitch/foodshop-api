@@ -12,20 +12,20 @@ use Illuminate\Database\Eloquent\Collection;
 interface RestaurantRepositoryInterface extends BaseRepositoryInterface
 {
     /**
-     * Paginated list of active restaurants with filters.
+     * List of active restaurants with filters. Paginated unless per_page=all.
      *
      * @param array $filters
-     * @return LengthAwarePaginator
+     * @return LengthAwarePaginator|Collection
      */
-    public function getActivePaginated(array $filters): LengthAwarePaginator;
+    public function getActivePaginated(array $filters): LengthAwarePaginator|Collection;
 
     /**
-     * Search active restaurants by name.
+     * Search active restaurants by name. Paginated unless per_page=all.
      *
      * @param array $filters
-     * @return LengthAwarePaginator
+     * @return LengthAwarePaginator|Collection
      */
-    public function searchByName(array $filters): LengthAwarePaginator;
+    public function searchByName(array $filters): LengthAwarePaginator|Collection;
 
     /**
      * Get active restaurants within radius of lat/long.
@@ -46,12 +46,12 @@ interface RestaurantRepositoryInterface extends BaseRepositoryInterface
     public function findWithRelations(int $id): Restaurant;
 
     /**
-     * Get all restaurants (admin) with optional status filter.
+     * Get all restaurants (admin) with optional status filter. Paginated unless per_page=all.
      *
      * @param array $filters
-     * @return LengthAwarePaginator
+     * @return LengthAwarePaginator|Collection
      */
-    public function getAllPaginated(array $filters): LengthAwarePaginator;
+    public function getAllPaginated(array $filters): LengthAwarePaginator|Collection;
 
     /**
      * Find restaurant with food items relation.

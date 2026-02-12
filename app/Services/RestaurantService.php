@@ -22,23 +22,23 @@ class RestaurantService
     ) {}
 
     /**
-     * Paginated list of active restaurants with optional filters.
+     * List of active restaurants with optional filters. Paginated unless per_page=all.
      *
-     * @param array $filters country_id?, restaurant_type_id?, delivery_available?, search?, per_page?
-     * @return LengthAwarePaginator
+     * @param array $filters country_id?, restaurant_type_id?, delivery_available?, search?, per_page? (int or 'all')
+     * @return LengthAwarePaginator|Collection
      */
-    public function index(array $filters): LengthAwarePaginator
+    public function index(array $filters): LengthAwarePaginator|Collection
     {
         return $this->restaurantRepository->getActivePaginated($filters);
     }
 
     /**
-     * Search restaurants by name (JSON name fields).
+     * Search restaurants by name (JSON name fields). Paginated unless per_page=all.
      *
-     * @param array $filters name?, per_page?
-     * @return LengthAwarePaginator
+     * @param array $filters name?, per_page? (int or 'all')
+     * @return LengthAwarePaginator|Collection
      */
-    public function search(array $filters): LengthAwarePaginator
+    public function search(array $filters): LengthAwarePaginator|Collection
     {
         return $this->restaurantRepository->searchByName($filters);
     }
@@ -148,12 +148,12 @@ class RestaurantService
     }
 
     /**
-     * Admin: paginated list of all restaurants with optional status filter.
+     * Admin: list of all restaurants with optional status filter. Paginated unless per_page=all.
      *
-     * @param array $filters status?, per_page?
-     * @return LengthAwarePaginator
+     * @param array $filters status?, per_page? (int or 'all')
+     * @return LengthAwarePaginator|Collection
      */
-    public function adminIndex(array $filters): LengthAwarePaginator
+    public function adminIndex(array $filters): LengthAwarePaginator|Collection
     {
         return $this->restaurantRepository->getAllPaginated($filters);
     }

@@ -7,7 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 /**
  * Form request for listing/searching food items (query params).
  *
- * Validates: restaurant_id, category_id, best_seller, vegetarian, search, per_page
+ * Validates: restaurant_id, category_id, best_seller, vegetarian, search, per_page, group_by
  */
 class IndexFoodItemsRequest extends FormRequest
 {
@@ -24,7 +24,7 @@ class IndexFoodItemsRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
-        $merge = $this->normalizeBooleans(['best_seller', 'vegetarian']);
+        $merge = $this->normalizeBooleans(['best_seller', 'vegetarian', 'group_by_category']);
         if ($merge !== []) {
             $this->merge($merge);
         }
@@ -43,7 +43,15 @@ class IndexFoodItemsRequest extends FormRequest
             'best_seller' => 'nullable|boolean',
             'vegetarian' => 'nullable|boolean',
             'search' => 'nullable|string|max:255',
-            'per_page' => 'nullable|integer|min:1|max:100',
+            'per_page' => ['nullable', function ($attribute, $value, $fail) {
+                if ($value === null || $value === '') return;
+                if (is_string($value) && strtolower($value) === 'all') return;
+                if (!is_numeric($value) || ($v = (int) $value) < 1 || $v > 100) {
+                    $fail('The per_page must be between 1 and 100 or "all".');
+                }
+            }],
+            'group_by' => 'nullable|string|in:category',
+            'group_by_category' => 'nullable|boolean',
         ];
     }
 
@@ -68,11 +76,15 @@ class IndexFoodItemsRequest extends FormRequest
     /**
      * Get filters array for FoodItemService::index (with proper types).
      *
-     * @return array{restaurant_id?: int, category_id?: int, best_seller?: bool, vegetarian?: bool, search?: string, per_page?: int}
+     * @return array{restaurant_id?: int, category_id?: int, best_seller?: bool, vegetarian?: bool, search?: string, per_page?: int|string, group_by?: string}
      */
     public function filters(): array
     {
         $validated = $this->validated();
+        $groupBy = $validated['group_by'] ?? null;
+        if ($groupBy === null && $this->boolean('group_by_category')) {
+            $groupBy = 'category';
+        }
 
         return [
             'restaurant_id' => $validated['restaurant_id'] ?? null,
@@ -81,6 +93,7 @@ class IndexFoodItemsRequest extends FormRequest
             'vegetarian' => $this->boolean('vegetarian'),
             'search' => $validated['search'] ?? null,
             'per_page' => $validated['per_page'] ?? null,
+            'group_by' => $groupBy,
         ];
     }
 }

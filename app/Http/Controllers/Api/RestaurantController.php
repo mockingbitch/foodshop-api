@@ -22,7 +22,7 @@ class RestaurantController extends BaseApiController
     ) {}
 
     /**
-     * Get List of Restaurants (paginated, filters: country_id, restaurant_type_id, delivery_available, search, per_page)
+     * Get List of Restaurants (paginated unless per_page=all; filters: country_id, restaurant_type_id, delivery_available, search, per_page)
      */
     public function index(Request $request): JsonResponse
     {
@@ -30,17 +30,17 @@ class RestaurantController extends BaseApiController
             'country_id', 'restaurant_type_id', 'delivery_available', 'search', 'per_page'
         ]));
 
-        return $this->success($restaurants);
+        return $this->successList($restaurants);
     }
 
     /**
-     * Search restaurants by name
+     * Search restaurants by name (paginated unless per_page=all)
      */
     public function search(Request $request): JsonResponse
     {
         $restaurants = $this->restaurantService->search($request->only(['name', 'per_page']));
 
-        return $this->success($restaurants);
+        return $this->successList($restaurants);
     }
 
     /**
