@@ -5,11 +5,10 @@ namespace App\Services;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Facades\Image;
 
 /**
  * Image upload business logic: process and store images (resize, encode jpg, save to public disk).
- * Handles generic images, restaurant (outside/inside), and food (main + extra).
+ * Uses PHP GD (no Intervention dependency). Handles generic, restaurant, food, and news images.
  */
 class FileUploadService
 {
@@ -114,6 +113,7 @@ class FileUploadService
 
     /**
      * Resize image (max width 1200, aspect ratio), encode as jpg 85%, store to public disk.
+     * Uses PHP GD.
      *
      * @param UploadedFile $image
      * @param string $folder
@@ -121,22 +121,76 @@ class FileUploadService
      */
     public function processAndStoreImage(UploadedFile $image, string $folder): string
     {
-        $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-        $path = $folder . '/' . $filename;
+        $path = $folder . '/' . time() . '_' . uniqid() . '.jpg';
 
         try {
-            $img = Image::make($image)
-                ->resize(1200, null, function ($constraint) {
-                    $constraint->aspectRatio();
-                    $constraint->upsize();
-                })
-                ->encode('jpg', 85);
-
-            Storage::disk('public')->put($path, (string) $img);
+            $blob = $this->resizeAndEncodeJpeg($image, 1200, 85);
+            Storage::disk('public')->put($path, $blob);
             return Storage::url($path);
         } catch (\Throwable $e) {
             Log::error('Image upload failed', ['folder' => $folder, 'error' => $e->getMessage()]);
             throw $e;
         }
+    }
+
+    /**
+     * Load image via GD, resize (max width, keep aspect ratio, no upsize), encode as JPEG.
+     *
+     * @param UploadedFile $file
+     * @param int $maxWidth
+     * @param int $quality 1-100
+     * @return string Binary JPEG content
+     */
+    private function resizeAndEncodeJpeg(UploadedFile $file, int $maxWidth = 1200, int $quality = 85): string
+    {
+        $path = $file->getRealPath();
+        $mime = $file->getMimeType();
+
+        $source = match (true) {
+            str_contains($mime, 'jpeg') || str_contains($mime, 'jpg') => imagecreatefromjpeg($path),
+            str_contains($mime, 'png') => imagecreatefrompng($path),
+            str_contains($mime, 'gif') => imagecreatefromgif($path),
+            str_contains($mime, 'webp') => imagecreatefromwebp($path),
+            default => throw new \InvalidArgumentException('Unsupported image type: ' . $mime),
+        };
+
+        if ($source === false) {
+            throw new \RuntimeException('Failed to load image.');
+        }
+
+        $width = imagesx($source);
+        $height = imagesy($source);
+        if ($width <= 0 || $height <= 0) {
+            imagedestroy($source);
+            throw new \RuntimeException('Invalid image dimensions.');
+        }
+
+        if ($width <= $maxWidth) {
+            $newWidth = $width;
+            $newHeight = $height;
+        } else {
+            $newWidth = $maxWidth;
+            $newHeight = (int) round($height * ($maxWidth / $width));
+        }
+
+        $dest = imagecreatetruecolor($newWidth, $newHeight);
+        if ($dest === false) {
+            imagedestroy($source);
+            throw new \RuntimeException('Failed to create destination image.');
+        }
+
+        imagecopyresampled($dest, $source, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+        imagedestroy($source);
+
+        ob_start();
+        imagejpeg($dest, null, $quality);
+        $blob = ob_get_clean();
+        imagedestroy($dest);
+
+        if ($blob === false || $blob === '') {
+            throw new \RuntimeException('Failed to encode JPEG.');
+        }
+
+        return $blob;
     }
 }
