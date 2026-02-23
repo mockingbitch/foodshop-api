@@ -8,18 +8,30 @@ use Illuminate\Support\Facades\Storage;
 
 /**
  * Image upload business logic: process and store images (resize, encode jpg, save to public disk).
- * Uses PHP GD (no Intervention dependency). Handles generic, restaurant, food, and news images.
+ * Uses PHP GD. Folders tách biệt: restaurant | food | news.
  */
 class FileUploadService
 {
+    /** Thư mục gốc upload (storage/app/public) */
+    public const UPLOAD_BASE = 'uploads';
+
+    /** Ảnh nhà hàng: uploads/restaurant/outside | uploads/restaurant/inside */
+    public const FOLDER_RESTAURANT = 'uploads/restaurant';
+
+    /** Ảnh món ăn: uploads/food/main | uploads/food/extra */
+    public const FOLDER_FOOD = 'uploads/food';
+
+    /** Ảnh tin tức: uploads/news/featured | uploads/news/gallery */
+    public const FOLDER_NEWS = 'uploads/news';
+
     /**
-     * Upload multiple images to folder. Each image is resized and stored.
+     * Upload multiple images to folder. Mặc định lưu vào food.
      *
      * @param UploadedFile[] $images
-     * @param string $folder Base folder (e.g. food-images)
+     * @param string $folder Base folder (dùng FOLDER_RESTAURANT | FOLDER_FOOD | FOLDER_NEWS hoặc subfolder)
      * @return array List of stored image URLs
      */
-    public function uploadImages(array $images, string $folder = 'food-images'): array
+    public function uploadImages(array $images, string $folder = self::FOLDER_FOOD): array
     {
         $urls = [];
         foreach ($images as $image) {
@@ -30,7 +42,7 @@ class FileUploadService
     }
 
     /**
-     * Upload restaurant images: outside (max 2), inside (max 5). Returns keyed array.
+     * Upload restaurant images: outside (max 2), inside (max 5). Lưu vào uploads/restaurant/*.
      *
      * @param UploadedFile[]|null $outsideImages
      * @param UploadedFile[]|null $insideImages
@@ -42,12 +54,12 @@ class FileUploadService
 
         if (!empty($outsideImages)) {
             foreach ($outsideImages as $image) {
-                $result['outside_images'][] = $this->processAndStoreImage($image, 'restaurant-images/outside');
+                $result['outside_images'][] = $this->processAndStoreImage($image, self::FOLDER_RESTAURANT . '/outside');
             }
         }
         if (!empty($insideImages)) {
             foreach ($insideImages as $image) {
-                $result['inside_images'][] = $this->processAndStoreImage($image, 'restaurant-images/inside');
+                $result['inside_images'][] = $this->processAndStoreImage($image, self::FOLDER_RESTAURANT . '/inside');
             }
         }
         $total = count($result['outside_images']) + count($result['inside_images']);
@@ -58,7 +70,7 @@ class FileUploadService
     }
 
     /**
-     * Upload food item images: main_image (required) + extra_images (optional). Returns keyed array.
+     * Upload food item images: main_image (required) + extra_images (optional). Lưu vào uploads/food/*.
      *
      * @param UploadedFile $mainImage
      * @param UploadedFile[]|null $extraImages
@@ -67,13 +79,13 @@ class FileUploadService
     public function uploadFoodImages(UploadedFile $mainImage, ?array $extraImages = null): array
     {
         $result = [
-            'main_image' => $this->processAndStoreImage($mainImage, 'food-images/main'),
+            'main_image' => $this->processAndStoreImage($mainImage, self::FOLDER_FOOD . '/main'),
             'extra_images' => [],
         ];
 
         if (!empty($extraImages)) {
             foreach ($extraImages as $image) {
-                $result['extra_images'][] = $this->processAndStoreImage($image, 'food-images/extra');
+                $result['extra_images'][] = $this->processAndStoreImage($image, self::FOLDER_FOOD . '/extra');
             }
         }
         Log::info('Food images uploaded', ['extra_count' => count($result['extra_images'])]);
@@ -81,7 +93,7 @@ class FileUploadService
     }
 
     /**
-     * Upload news images: featured_image (optional, 1 file) + gallery_images (optional, max 10).
+     * Upload news images: featured_image (optional, 1 file) + gallery_images (optional, max 10). Lưu vào uploads/news/*.
      *
      * @param UploadedFile|null $featuredImage
      * @param UploadedFile[]|null $galleryImages
@@ -95,11 +107,11 @@ class FileUploadService
         ];
 
         if ($featuredImage) {
-            $result['featured_image'] = $this->processAndStoreImage($featuredImage, 'news-images/featured');
+            $result['featured_image'] = $this->processAndStoreImage($featuredImage, self::FOLDER_NEWS . '/featured');
         }
         if (! empty($galleryImages)) {
             foreach ($galleryImages as $image) {
-                $result['gallery_images'][] = $this->processAndStoreImage($image, 'news-images/gallery');
+                $result['gallery_images'][] = $this->processAndStoreImage($image, self::FOLDER_NEWS . '/gallery');
             }
         }
         if ($result['featured_image'] || count($result['gallery_images']) > 0) {
