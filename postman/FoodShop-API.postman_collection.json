@@ -641,10 +641,12 @@
             "body": {
               "mode": "formdata",
               "formdata": [
-                { "key": "images[]", "type": "file", "src": [], "description": "Một hoặc nhiều file ảnh" }
+                { "key": "type", "type": "text", "value": "food", "description": "restaurant | food | news — thư mục lưu ảnh (mặc định food)" },
+                { "key": "images[]", "type": "file", "src": [], "description": "Một hoặc nhiều file ảnh (max 5)" }
               ]
             },
-            "url": "{{base_url}}/api/upload/images"
+            "url": "{{base_url}}/api/upload/images",
+            "description": "Upload nhiều ảnh (max 5). Gửi type=news để lưu vào uploads/news, type=restaurant → uploads/restaurant, type=food hoặc bỏ qua → uploads/food."
           }
         },
         {
