@@ -20,13 +20,13 @@ class FileUploadController extends BaseApiController
     ) {}
 
     /**
-     * Upload multiple images (max 5). Stored under food-images.
+     * Upload multiple images (max 5). Lưu vào uploads/food.
      */
     public function uploadImages(UploadImagesRequest $request): JsonResponse
     {
         $images = $this->fileUploadService->uploadImages(
             $request->file('images'),
-            'food-images'
+            FileUploadService::FOLDER_FOOD
         );
 
         return $this->success(['images' => $images], 'Images uploaded successfully');

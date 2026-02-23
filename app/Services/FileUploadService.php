@@ -5,22 +5,33 @@ namespace App\Services;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Facades\Image;
 
 /**
  * Image upload business logic: process and store images (resize, encode jpg, save to public disk).
- * Handles generic images, restaurant (outside/inside), and food (main + extra).
+ * Uses PHP GD. Folders tách biệt: restaurant | food | news.
  */
 class FileUploadService
 {
+    /** Thư mục gốc upload (storage/app/public) */
+    public const UPLOAD_BASE = 'uploads';
+
+    /** Ảnh nhà hàng: uploads/restaurant/outside | uploads/restaurant/inside */
+    public const FOLDER_RESTAURANT = 'uploads/restaurant';
+
+    /** Ảnh món ăn: uploads/food/main | uploads/food/extra */
+    public const FOLDER_FOOD = 'uploads/food';
+
+    /** Ảnh tin tức: uploads/news/featured | uploads/news/gallery */
+    public const FOLDER_NEWS = 'uploads/news';
+
     /**
-     * Upload multiple images to folder. Each image is resized and stored.
+     * Upload multiple images to folder. Mặc định lưu vào food.
      *
      * @param UploadedFile[] $images
-     * @param string $folder Base folder (e.g. food-images)
+     * @param string $folder Base folder (dùng FOLDER_RESTAURANT | FOLDER_FOOD | FOLDER_NEWS hoặc subfolder)
      * @return array List of stored image URLs
      */
-    public function uploadImages(array $images, string $folder = 'food-images'): array
+    public function uploadImages(array $images, string $folder = self::FOLDER_FOOD): array
     {
         $urls = [];
         foreach ($images as $image) {
@@ -31,7 +42,7 @@ class FileUploadService
     }
 
     /**
-     * Upload restaurant images: outside (max 2), inside (max 5). Returns keyed array.
+     * Upload restaurant images: outside (max 2), inside (max 5). Lưu vào uploads/restaurant/*.
      *
      * @param UploadedFile[]|null $outsideImages
      * @param UploadedFile[]|null $insideImages
@@ -43,12 +54,12 @@ class FileUploadService
 
         if (!empty($outsideImages)) {
             foreach ($outsideImages as $image) {
-                $result['outside_images'][] = $this->processAndStoreImage($image, 'restaurant-images/outside');
+                $result['outside_images'][] = $this->processAndStoreImage($image, self::FOLDER_RESTAURANT . '/outside');
             }
         }
         if (!empty($insideImages)) {
             foreach ($insideImages as $image) {
-                $result['inside_images'][] = $this->processAndStoreImage($image, 'restaurant-images/inside');
+                $result['inside_images'][] = $this->processAndStoreImage($image, self::FOLDER_RESTAURANT . '/inside');
             }
         }
         $total = count($result['outside_images']) + count($result['inside_images']);
@@ -59,7 +70,7 @@ class FileUploadService
     }
 
     /**
-     * Upload food item images: main_image (required) + extra_images (optional). Returns keyed array.
+     * Upload food item images: main_image (required) + extra_images (optional). Lưu vào uploads/food/*.
      *
      * @param UploadedFile $mainImage
      * @param UploadedFile[]|null $extraImages
@@ -68,13 +79,13 @@ class FileUploadService
     public function uploadFoodImages(UploadedFile $mainImage, ?array $extraImages = null): array
     {
         $result = [
-            'main_image' => $this->processAndStoreImage($mainImage, 'food-images/main'),
+            'main_image' => $this->processAndStoreImage($mainImage, self::FOLDER_FOOD . '/main'),
             'extra_images' => [],
         ];
 
         if (!empty($extraImages)) {
             foreach ($extraImages as $image) {
-                $result['extra_images'][] = $this->processAndStoreImage($image, 'food-images/extra');
+                $result['extra_images'][] = $this->processAndStoreImage($image, self::FOLDER_FOOD . '/extra');
             }
         }
         Log::info('Food images uploaded', ['extra_count' => count($result['extra_images'])]);
@@ -82,7 +93,7 @@ class FileUploadService
     }
 
     /**
-     * Upload news images: featured_image (optional, 1 file) + gallery_images (optional, max 10).
+     * Upload news images: featured_image (optional, 1 file) + gallery_images (optional, max 10). Lưu vào uploads/news/*.
      *
      * @param UploadedFile|null $featuredImage
      * @param UploadedFile[]|null $galleryImages
@@ -96,11 +107,11 @@ class FileUploadService
         ];
 
         if ($featuredImage) {
-            $result['featured_image'] = $this->processAndStoreImage($featuredImage, 'news-images/featured');
+            $result['featured_image'] = $this->processAndStoreImage($featuredImage, self::FOLDER_NEWS . '/featured');
         }
         if (! empty($galleryImages)) {
             foreach ($galleryImages as $image) {
-                $result['gallery_images'][] = $this->processAndStoreImage($image, 'news-images/gallery');
+                $result['gallery_images'][] = $this->processAndStoreImage($image, self::FOLDER_NEWS . '/gallery');
             }
         }
         if ($result['featured_image'] || count($result['gallery_images']) > 0) {
@@ -114,6 +125,7 @@ class FileUploadService
 
     /**
      * Resize image (max width 1200, aspect ratio), encode as jpg 85%, store to public disk.
+     * Uses PHP GD.
      *
      * @param UploadedFile $image
      * @param string $folder
@@ -121,22 +133,76 @@ class FileUploadService
      */
     public function processAndStoreImage(UploadedFile $image, string $folder): string
     {
-        $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-        $path = $folder . '/' . $filename;
+        $path = $folder . '/' . time() . '_' . uniqid() . '.jpg';
 
         try {
-            $img = Image::make($image)
-                ->resize(1200, null, function ($constraint) {
-                    $constraint->aspectRatio();
-                    $constraint->upsize();
-                })
-                ->encode('jpg', 85);
-
-            Storage::disk('public')->put($path, (string) $img);
+            $blob = $this->resizeAndEncodeJpeg($image, 1200, 85);
+            Storage::disk('public')->put($path, $blob);
             return Storage::url($path);
         } catch (\Throwable $e) {
             Log::error('Image upload failed', ['folder' => $folder, 'error' => $e->getMessage()]);
             throw $e;
         }
+    }
+
+    /**
+     * Load image via GD, resize (max width, keep aspect ratio, no upsize), encode as JPEG.
+     *
+     * @param UploadedFile $file
+     * @param int $maxWidth
+     * @param int $quality 1-100
+     * @return string Binary JPEG content
+     */
+    private function resizeAndEncodeJpeg(UploadedFile $file, int $maxWidth = 1200, int $quality = 85): string
+    {
+        $path = $file->getRealPath();
+        $mime = $file->getMimeType();
+
+        $source = match (true) {
+            str_contains($mime, 'jpeg') || str_contains($mime, 'jpg') => imagecreatefromjpeg($path),
+            str_contains($mime, 'png') => imagecreatefrompng($path),
+            str_contains($mime, 'gif') => imagecreatefromgif($path),
+            str_contains($mime, 'webp') => imagecreatefromwebp($path),
+            default => throw new \InvalidArgumentException('Unsupported image type: ' . $mime),
+        };
+
+        if ($source === false) {
+            throw new \RuntimeException('Failed to load image.');
+        }
+
+        $width = imagesx($source);
+        $height = imagesy($source);
+        if ($width <= 0 || $height <= 0) {
+            imagedestroy($source);
+            throw new \RuntimeException('Invalid image dimensions.');
+        }
+
+        if ($width <= $maxWidth) {
+            $newWidth = $width;
+            $newHeight = $height;
+        } else {
+            $newWidth = $maxWidth;
+            $newHeight = (int) round($height * ($maxWidth / $width));
+        }
+
+        $dest = imagecreatetruecolor($newWidth, $newHeight);
+        if ($dest === false) {
+            imagedestroy($source);
+            throw new \RuntimeException('Failed to create destination image.');
+        }
+
+        imagecopyresampled($dest, $source, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+        imagedestroy($source);
+
+        ob_start();
+        imagejpeg($dest, null, $quality);
+        $blob = ob_get_clean();
+        imagedestroy($dest);
+
+        if ($blob === false || $blob === '') {
+            throw new \RuntimeException('Failed to encode JPEG.');
+        }
+
+        return $blob;
     }
 }
