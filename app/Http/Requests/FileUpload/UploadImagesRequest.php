@@ -7,7 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 /**
  * Form request for uploading multiple images (generic).
  *
- * Validates: images (required, array, max 5 items), each: image, mimes jpeg/png/jpg/webp, max 5MB
+ * Validates: images (required, array, max 5 items), type (optional: restaurant|food|news để lưu đúng thư mục).
  */
 class UploadImagesRequest extends FormRequest
 {
@@ -29,6 +29,7 @@ class UploadImagesRequest extends FormRequest
         return [
             'images' => 'required|array|max:5',
             'images.*' => 'required|image|mimes:jpeg,png,jpg,webp|max:5120',
+            'type' => 'nullable|string|in:restaurant,food,news',
         ];
     }
 }

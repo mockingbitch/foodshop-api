@@ -20,13 +20,20 @@ class FileUploadController extends BaseApiController
     ) {}
 
     /**
-     * Upload multiple images (max 5). Lưu vào uploads/food. Response: urls (mảng URL ảnh đầy đủ).
+     * Upload multiple images (max 5). Query/body: type = restaurant|food|news để lưu đúng thư mục (mặc định: food).
      */
     public function uploadImages(UploadImagesRequest $request): JsonResponse
     {
+        $type = $request->input('type', 'food');
+        $folder = match ($type) {
+            'restaurant' => FileUploadService::FOLDER_RESTAURANT,
+            'news' => FileUploadService::FOLDER_NEWS,
+            default => FileUploadService::FOLDER_FOOD,
+        };
+
         $urls = $this->fileUploadService->uploadImages(
             $request->file('images'),
-            FileUploadService::FOLDER_FOOD
+            $folder
         );
 
         return $this->success(['urls' => $urls, 'images' => $urls], 'Images uploaded successfully');
