@@ -5,6 +5,7 @@ namespace App\Services;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 
 /**
  * Image upload business logic: process and store images (resize, encode jpg, save to public disk).
@@ -138,7 +139,7 @@ class FileUploadService
         try {
             $blob = $this->resizeAndEncodeJpeg($image, 1200, 85);
             Storage::disk('public')->put($path, $blob);
-            return Storage::url($path);
+            return $this->getPublicUrl($path);
         } catch (\Throwable $e) {
             Log::error('Image upload failed', ['folder' => $folder, 'error' => $e->getMessage()]);
             throw $e;
@@ -204,5 +205,14 @@ class FileUploadService
         }
 
         return $blob;
+    }
+
+    /**
+     * Trả về URL đầy đủ (absolute) của ảnh trên public disk.
+     */
+    private function getPublicUrl(string $path): string
+    {
+        $url = Storage::disk('public')->url($path);
+        return str_starts_with($url, 'http') ? $url : URL::to($url);
     }
 }

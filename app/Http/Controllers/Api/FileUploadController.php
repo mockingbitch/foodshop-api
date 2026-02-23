@@ -20,20 +20,20 @@ class FileUploadController extends BaseApiController
     ) {}
 
     /**
-     * Upload multiple images (max 5). Lưu vào uploads/food.
+     * Upload multiple images (max 5). Lưu vào uploads/food. Response: urls (mảng URL ảnh đầy đủ).
      */
     public function uploadImages(UploadImagesRequest $request): JsonResponse
     {
-        $images = $this->fileUploadService->uploadImages(
+        $urls = $this->fileUploadService->uploadImages(
             $request->file('images'),
             FileUploadService::FOLDER_FOOD
         );
 
-        return $this->success(['images' => $images], 'Images uploaded successfully');
+        return $this->success(['urls' => $urls, 'images' => $urls], 'Images uploaded successfully');
     }
 
     /**
-     * Upload restaurant images: outside (max 2), inside (max 5).
+     * Upload restaurant images: outside (max 2), inside (max 5). Response: urls (outside_images, inside_images là mảng URL).
      */
     public function uploadRestaurantImages(UploadRestaurantImagesRequest $request): JsonResponse
     {
@@ -42,11 +42,11 @@ class FileUploadController extends BaseApiController
             $request->file('inside_images')
         );
 
-        return $this->success(['images' => $result], 'Restaurant images uploaded successfully');
+        return $this->success(['urls' => $result, 'images' => $result], 'Restaurant images uploaded successfully');
     }
 
     /**
-     * Upload food item images: main_image (required) + extra_images (max 5).
+     * Upload food item images: main_image (required) + extra_images (max 5). Response: urls (main_image, extra_images là URL).
      */
     public function uploadFoodImages(UploadFoodImagesRequest $request): JsonResponse
     {
@@ -55,12 +55,12 @@ class FileUploadController extends BaseApiController
             $request->file('extra_images')
         );
 
-        return $this->success(['images' => $result], 'Food images uploaded successfully');
+        return $this->success(['urls' => $result, 'images' => $result], 'Food images uploaded successfully');
     }
 
     /**
      * Upload news images: featured_image (optional) + gallery_images (optional, max 10).
-     * Returns URLs to use in POST/PUT news (featured_image, gallery_images).
+     * Response: urls (featured_image, gallery_images) — dùng các URL này khi POST/PUT news.
      */
     public function uploadNewsImages(UploadNewsImagesRequest $request): JsonResponse
     {
@@ -69,6 +69,6 @@ class FileUploadController extends BaseApiController
             $request->file('gallery_images')
         );
 
-        return $this->success(['images' => $result], 'News images uploaded successfully');
+        return $this->success(['urls' => $result, 'images' => $result], 'News images uploaded successfully');
     }
 }
