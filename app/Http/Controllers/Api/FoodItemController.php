@@ -74,13 +74,13 @@ class FoodItemController extends BaseApiController
     }
 
     /**
-     * Create food item (owner). Food code pending until admin confirmation.
+     * Create food item (owner). Status active, food_code confirmed mặc định.
      */
     public function store(StoreFoodItemRequest $request): JsonResponse
     {
         $foodItem = $this->foodItemService->store($request->user(), $request->validated());
 
-        return $this->created(['food_item' => $foodItem], 'Food item created successfully. Awaiting code confirmation.');
+        return $this->created(['food_item' => $foodItem], 'Food item created successfully.');
     }
 
     /**

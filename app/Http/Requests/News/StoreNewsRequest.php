@@ -44,7 +44,7 @@ class StoreNewsRequest extends FormRequest
             'course_price' => 'nullable|numeric',
             'course_duration' => 'nullable|integer',
             'max_participants' => 'nullable|integer',
-            'status' => 'required|in:published,draft,archived',
+            'status' => 'sometimes|in:published,draft,archived',
             'published_at' => 'nullable|date',
         ];
     }
