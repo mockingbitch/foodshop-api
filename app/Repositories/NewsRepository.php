@@ -6,6 +6,7 @@ use App\Contracts\Repositories\NewsRepositoryInterface;
 use App\Models\News;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * News repository: Eloquent query layer for News (news/course/chef).
@@ -32,11 +33,18 @@ class NewsRepository extends BaseRepository implements NewsRepositoryInterface
             $query->type($filters['type']);
         }
         if (! empty($filters['search'])) {
-            $search = '%' . $filters['search'] . '%';
-            $query->where(function ($q) use ($search) {
-                $q->where('title->en', 'like', $search)
-                    ->orWhere('title->vn', 'like', $search)
-                    ->orWhere('title->kr', 'like', $search);
+            $pattern = '%' . mb_strtolower(trim($filters['search']), 'UTF-8') . '%';
+            $query->where(function ($q) use ($pattern) {
+                $driver = DB::getDriverName();
+                if ($driver === 'pgsql') {
+                    $q->whereRaw('LOWER(COALESCE(title->>\'en\', \'\')) LIKE ?', [$pattern])
+                        ->orWhereRaw('LOWER(COALESCE(title->>\'vn\', \'\')) LIKE ?', [$pattern])
+                        ->orWhereRaw('LOWER(COALESCE(title->>\'kr\', \'\')) LIKE ?', [$pattern]);
+                } else {
+                    $q->whereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(title, "$.en"))) LIKE ?', [$pattern])
+                        ->orWhereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(title, "$.vn"))) LIKE ?', [$pattern])
+                        ->orWhereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(title, "$.kr"))) LIKE ?', [$pattern]);
+                }
             });
         }
 
@@ -65,11 +73,18 @@ class NewsRepository extends BaseRepository implements NewsRepositoryInterface
             $query->where('status', $filters['status']);
         }
         if (! empty($filters['search'])) {
-            $search = '%' . $filters['search'] . '%';
-            $query->where(function ($q) use ($search) {
-                $q->where('title->en', 'like', $search)
-                    ->orWhere('title->vn', 'like', $search)
-                    ->orWhere('title->kr', 'like', $search);
+            $pattern = '%' . mb_strtolower(trim($filters['search']), 'UTF-8') . '%';
+            $query->where(function ($q) use ($pattern) {
+                $driver = DB::getDriverName();
+                if ($driver === 'pgsql') {
+                    $q->whereRaw('LOWER(COALESCE(title->>\'en\', \'\')) LIKE ?', [$pattern])
+                        ->orWhereRaw('LOWER(COALESCE(title->>\'vn\', \'\')) LIKE ?', [$pattern])
+                        ->orWhereRaw('LOWER(COALESCE(title->>\'kr\', \'\')) LIKE ?', [$pattern]);
+                } else {
+                    $q->whereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(title, "$.en"))) LIKE ?', [$pattern])
+                        ->orWhereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(title, "$.vn"))) LIKE ?', [$pattern])
+                        ->orWhereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(title, "$.kr"))) LIKE ?', [$pattern]);
+                }
             });
         }
 

@@ -6,6 +6,7 @@ use App\Contracts\Repositories\RestaurantRepositoryInterface;
 use App\Models\Restaurant;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Restaurant repository: Eloquent query layer for Restaurant model.
@@ -38,12 +39,9 @@ class RestaurantRepository extends BaseRepository implements RestaurantRepositor
             $query->where('delivery_available', (bool) $filters['delivery_available']);
         }
         if (! empty($filters['search'])) {
-            $search = '%' . $filters['search'] . '%';
-            $query->where(function ($q) use ($search) {
-                $q->where('name->en', 'like', $search)
-                    ->orWhere('name->vn', 'like', $search)
-                    ->orWhere('name->kr', 'like', $search)
-                    ->orWhere('city', 'like', $search);
+            $pattern = $this->likePatternCaseInsensitive($filters['search']);
+            $query->where(function ($q) use ($pattern) {
+                $this->addSearchRestaurantNameCity($q, $pattern);
             });
         }
 
@@ -64,11 +62,9 @@ class RestaurantRepository extends BaseRepository implements RestaurantRepositor
         $query = $this->query()->with(['country', 'restaurantType'])->active();
 
         if (! empty($filters['name'])) {
-            $name = '%' . $filters['name'] . '%';
-            $query->where(function ($q) use ($name) {
-                $q->where('name->en', 'like', $name)
-                    ->orWhere('name->vn', 'like', $name)
-                    ->orWhere('name->kr', 'like', $name);
+            $pattern = $this->likePatternCaseInsensitive($filters['name']);
+            $query->where(function ($q) use ($pattern) {
+                $this->addSearchRestaurantName($q, $pattern);
             });
         }
 
@@ -185,5 +181,49 @@ class RestaurantRepository extends BaseRepository implements RestaurantRepositor
     public function countHidden(): int
     {
         return $this->query()->hidden()->count();
+    }
+
+    /**
+     * Chuẩn hóa từ khóa tìm kiếm: trim, lowercase (UTF-8) để match không phân biệt hoa thường.
+     */
+    private function likePatternCaseInsensitive(string $keyword): string
+    {
+        return '%' . mb_strtolower(trim($keyword), 'UTF-8') . '%';
+    }
+
+    /**
+     * Thêm điều kiện tìm kiếm theo name (JSON) + city, không phân biệt hoa thường.
+     */
+    private function addSearchRestaurantNameCity(\Illuminate\Database\Eloquent\Builder $q, string $pattern): void
+    {
+        $driver = DB::getDriverName();
+        if ($driver === 'pgsql') {
+            $q->whereRaw('LOWER(COALESCE(name->>\'en\', \'\')) LIKE ?', [$pattern])
+                ->orWhereRaw('LOWER(COALESCE(name->>\'vn\', \'\')) LIKE ?', [$pattern])
+                ->orWhereRaw('LOWER(COALESCE(name->>\'kr\', \'\')) LIKE ?', [$pattern])
+                ->orWhereRaw('LOWER(COALESCE(city, \'\')) LIKE ?', [$pattern]);
+        } else {
+            $q->whereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, "$.en"))) LIKE ?', [$pattern])
+                ->orWhereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, "$.vn"))) LIKE ?', [$pattern])
+                ->orWhereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, "$.kr"))) LIKE ?', [$pattern])
+                ->orWhereRaw('LOWER(COALESCE(city, "")) LIKE ?', [$pattern]);
+        }
+    }
+
+    /**
+     * Thêm điều kiện tìm kiếm theo name (JSON), không phân biệt hoa thường.
+     */
+    private function addSearchRestaurantName(\Illuminate\Database\Eloquent\Builder $q, string $pattern): void
+    {
+        $driver = DB::getDriverName();
+        if ($driver === 'pgsql') {
+            $q->whereRaw('LOWER(COALESCE(name->>\'en\', \'\')) LIKE ?', [$pattern])
+                ->orWhereRaw('LOWER(COALESCE(name->>\'vn\', \'\')) LIKE ?', [$pattern])
+                ->orWhereRaw('LOWER(COALESCE(name->>\'kr\', \'\')) LIKE ?', [$pattern]);
+        } else {
+            $q->whereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, "$.en"))) LIKE ?', [$pattern])
+                ->orWhereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, "$.vn"))) LIKE ?', [$pattern])
+                ->orWhereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, "$.kr"))) LIKE ?', [$pattern]);
+        }
     }
 }
