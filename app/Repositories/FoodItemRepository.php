@@ -6,6 +6,7 @@ use App\Contracts\Repositories\FoodItemRepositoryInterface;
 use App\Models\FoodItem;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Food item repository: Eloquent query layer for FoodItem model.
@@ -44,12 +45,20 @@ class FoodItemRepository extends BaseRepository implements FoodItemRepositoryInt
             $query->vegetarian();
         }
         if (! empty($filters['search'])) {
-            $search = '%' . $filters['search'] . '%';
-            $query->where(function ($q) use ($search) {
-                $q->where('name->en', 'like', $search)
-                    ->orWhere('name->vn', 'like', $search)
-                    ->orWhere('name->kr', 'like', $search)
-                    ->orWhere('food_code', 'like', $search);
+            $pattern = '%' . mb_strtolower(trim($filters['search']), 'UTF-8') . '%';
+            $query->where(function ($q) use ($pattern) {
+                $driver = DB::getDriverName();
+                if ($driver === 'pgsql') {
+                    $q->whereRaw('LOWER(COALESCE(name->>\'en\', \'\')) LIKE ?', [$pattern])
+                        ->orWhereRaw('LOWER(COALESCE(name->>\'vn\', \'\')) LIKE ?', [$pattern])
+                        ->orWhereRaw('LOWER(COALESCE(name->>\'kr\', \'\')) LIKE ?', [$pattern])
+                        ->orWhereRaw('LOWER(COALESCE(food_code, \'\')) LIKE ?', [$pattern]);
+                } else {
+                    $q->whereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, "$.en"))) LIKE ?', [$pattern])
+                        ->orWhereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, "$.vn"))) LIKE ?', [$pattern])
+                        ->orWhereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, "$.kr"))) LIKE ?', [$pattern])
+                        ->orWhereRaw('LOWER(COALESCE(food_code, "")) LIKE ?', [$pattern]);
+                }
             });
         }
 

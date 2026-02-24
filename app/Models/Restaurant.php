@@ -63,6 +63,7 @@ class Restaurant extends Model
         'status',
         'rating',
         'review_count',
+        'food_item_review_count',
         'business_hours',
     ];
 
@@ -75,6 +76,7 @@ class Restaurant extends Model
         'latitude' => 'decimal:8',
         'longitude' => 'decimal:8',
         'rating' => 'decimal:2',
+        'food_item_review_count' => 'integer',
     ];
 
     /**
