@@ -88,7 +88,7 @@ class RestaurantSeeder extends Seeder
                     'delivery_available' => (bool) ($i % 3),
                     'status' => 'active',
                     'rating' => round(3.5 + (mt_rand(0, 150) / 100), 2),
-                    'review_count' => mt_rand(10, 500),
+                    'review_count' => 0, // được cập nhật đúng theo số review trong ReviewSeeder
                 ]
             );
         }
