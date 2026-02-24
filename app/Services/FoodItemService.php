@@ -140,9 +140,9 @@ class FoodItemService
 
         $foodItem = $this->foodItemRepository->create(array_merge($data, [
             'food_code' => $foodCode,
-            'food_code_status' => 'pending',
+            'food_code_status' => 'confirmed',
             'price_usd' => $priceUsd,
-            'status' => 'pending',
+            'status' => 'active',
         ]));
 
         Log::info('Food item created', ['food_item_id' => $foodItem->id, 'restaurant_id' => $data['restaurant_id'], 'food_code' => $foodCode]);

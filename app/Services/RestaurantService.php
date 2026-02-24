@@ -94,7 +94,7 @@ class RestaurantService
         $restaurant = $this->restaurantRepository->create(array_merge($data, [
             'code' => $code,
             'user_id' => $user->id,
-            'status' => 'pending',
+            'status' => 'active',
         ]));
 
         Log::info('Restaurant created', ['restaurant_id' => $restaurant->id, 'user_id' => $user->id, 'code' => $code]);

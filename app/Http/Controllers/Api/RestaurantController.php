@@ -68,13 +68,13 @@ class RestaurantController extends BaseApiController
     }
 
     /**
-     * Create restaurant (owner). Status pending until admin approval.
+     * Create restaurant (owner). Status active mặc định.
      */
     public function store(StoreRestaurantRequest $request): JsonResponse
     {
         $restaurant = $this->restaurantService->store($request->user(), $request->validated());
 
-        return $this->created(['restaurant' => $restaurant], 'Restaurant created successfully. Awaiting admin approval.');
+        return $this->created(['restaurant' => $restaurant], 'Restaurant created successfully.');
     }
 
     /**

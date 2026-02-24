@@ -74,6 +74,9 @@ class NewsService
     public function store(array $data): News
     {
         $data = $this->sanitizeWysiwygFields($data);
+        if (! isset($data['status'])) {
+            $data['status'] = 'published';
+        }
         $news = $this->newsRepository->create($data);
         Log::info('News created', ['news_id' => $news->id, 'type' => $news->type ?? null]);
         return $news;
