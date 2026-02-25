@@ -120,7 +120,7 @@ Trả về danh sách nhà hàng của owner đang đăng nhập. **Luôn lấy 
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| GET | `/api/restaurants` | No | List active restaurants (paginated). Query: `country_id`, `restaurant_type_id`, `delivery_available`, `search`, `per_page` |
+| GET | `/api/restaurants` | No | List active restaurants (paginated). Query: `owner_id`, `country_id`, `restaurant_type_id`, `delivery_available`, `search`, `per_page` |
 | GET | `/api/restaurants/search` | No | Search by name. Query: `name`, `per_page` |
 | GET | `/api/restaurants/nearby` | No | Restaurants within radius. Query: `latitude`, `longitude`, `radius_km` |
 | GET | `/api/restaurants/{id}` | No | Restaurant detail with best_sellers, outside_images, inside_images |

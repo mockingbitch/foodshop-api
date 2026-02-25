@@ -22,12 +22,12 @@ class RestaurantController extends BaseApiController
     ) {}
 
     /**
-     * Get List of Restaurants (paginated unless per_page=all; filters: country_id, restaurant_type_id, delivery_available, search, per_page)
+     * Get List of Restaurants (paginated unless per_page=all; filters: owner_id, country_id, restaurant_type_id, delivery_available, search, per_page)
      */
     public function index(Request $request): JsonResponse
     {
         $restaurants = $this->restaurantService->index($request->only([
-            'country_id', 'restaurant_type_id', 'delivery_available', 'search', 'per_page'
+            'owner_id', 'country_id', 'restaurant_type_id', 'delivery_available', 'search', 'per_page'
         ]));
 
         return $this->successList($restaurants);
