@@ -8,7 +8,8 @@ use Illuminate\Foundation\Http\FormRequest;
  * Form request for creating a new restaurant.
  *
  * Validates: country_id, restaurant_type_id, name (multilingual), description,
- * city, address, phone, zalo, email, latitude, longitude, delivery_available, remark
+ * city, address, phone, zalo, email, latitude, longitude, main_image, outside/inside images,
+ * youtube_link, facebook_link, webpage_link, delivery_available, remark
  */
 class StoreRestaurantRequest extends FormRequest
 {
@@ -51,6 +52,17 @@ class StoreRestaurantRequest extends FormRequest
             'email' => 'nullable|email',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
+            'main_image' => 'nullable|string|max:500',
+            'outside_image_1' => 'nullable|string|max:500',
+            'outside_image_2' => 'nullable|string|max:500',
+            'inside_image_1' => 'nullable|string|max:500',
+            'inside_image_2' => 'nullable|string|max:500',
+            'inside_image_3' => 'nullable|string|max:500',
+            'inside_image_4' => 'nullable|string|max:500',
+            'inside_image_5' => 'nullable|string|max:500',
+            'youtube_link' => 'nullable|string|max:500',
+            'facebook_link' => 'nullable|string|max:500',
+            'webpage_link' => 'nullable|string|max:500',
             'delivery_available' => 'sometimes|boolean',
             'remark' => 'nullable|array',
         ];

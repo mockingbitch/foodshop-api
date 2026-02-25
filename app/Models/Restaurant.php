@@ -26,6 +26,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null $email
  * @property float|null $latitude
  * @property float|null $longitude
+ * @property string|null $main_image Main thumbnail URL
  * @property bool $delivery_available
  * @property array|null $remark
  * @property string $status active|hidden|pending
@@ -48,6 +49,7 @@ class Restaurant extends Model
         'email',
         'latitude',
         'longitude',
+        'main_image',
         'outside_image_1',
         'outside_image_2',
         'inside_image_1',

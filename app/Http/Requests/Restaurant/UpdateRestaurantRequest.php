@@ -8,6 +8,7 @@ use Illuminate\Foundation\Http\FormRequest;
  * Form request for updating an existing restaurant.
  *
  * Validates: name, description, city, address, phone, zalo, email,
+ * main_image, outside/inside images, youtube_link, facebook_link, webpage_link,
  * delivery_available, remark (all optional/sometimes)
  */
 class UpdateRestaurantRequest extends FormRequest
@@ -46,6 +47,17 @@ class UpdateRestaurantRequest extends FormRequest
             'phone' => 'sometimes|string|max:20',
             'zalo' => 'nullable|string|max:50',
             'email' => 'nullable|email',
+            'main_image' => 'nullable|string|max:500',
+            'outside_image_1' => 'nullable|string|max:500',
+            'outside_image_2' => 'nullable|string|max:500',
+            'inside_image_1' => 'nullable|string|max:500',
+            'inside_image_2' => 'nullable|string|max:500',
+            'inside_image_3' => 'nullable|string|max:500',
+            'inside_image_4' => 'nullable|string|max:500',
+            'inside_image_5' => 'nullable|string|max:500',
+            'youtube_link' => 'nullable|string|max:500',
+            'facebook_link' => 'nullable|string|max:500',
+            'webpage_link' => 'nullable|string|max:500',
             'delivery_available' => 'sometimes|boolean',
             'remark' => 'nullable|array',
         ];
