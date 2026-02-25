@@ -155,20 +155,17 @@ class Restaurant extends Model
 
     /**
      * Scope: restaurants within radius (km) of lat/long (Haversine).
+     * Uses WHERE (not HAVING) for the radius so it works on PostgreSQL where alias is not visible in HAVING.
      */
     public function scopeNearby($query, $latitude, $longitude, $radiusInKm = 10)
     {
-        // Haversine formula for distance calculation
-        $query->selectRaw("
-            *,
-            (6371 * acos(
-                cos(radians(?)) * cos(radians(latitude)) *
-                cos(radians(longitude) - radians(?)) +
-                sin(radians(?)) * sin(radians(latitude))
-            )) AS distance
-        ", [$latitude, $longitude, $latitude])
-        ->having('distance', '<=', $radiusInKm)
-        ->orderBy('distance');
+        $haversine = '(6371 * acos(greatest(-1, least(1, cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude))))))';
+        $query->selectRaw(
+            "*, {$haversine} AS distance",
+            [$latitude, $longitude, $latitude]
+        )
+            ->whereRaw("{$haversine} <= ?", [$latitude, $longitude, $latitude, $radiusInKm])
+            ->orderBy('distance');
     }
 
     /**
