@@ -12,15 +12,15 @@ use Illuminate\Database\Eloquent\Collection;
 interface FoodItemRepositoryInterface extends BaseRepositoryInterface
 {
     /**
-     * Paginated list of active food items with confirmed code and filters.
+     * List of active food items with confirmed code and filters. Paginated unless per_page=all.
      *
      * @param array $filters
-     * @return LengthAwarePaginator
+     * @return LengthAwarePaginator|Collection
      */
-    public function getActiveConfirmedPaginated(array $filters): LengthAwarePaginator;
+    public function getActiveConfirmedPaginated(array $filters): LengthAwarePaginator|Collection;
 
     /**
-     * Get active confirmed food items by category ID.
+     * Get active confirmed food items by category ID (paginated).
      *
      * @param int $categoryId
      * @return LengthAwarePaginator
@@ -28,12 +28,12 @@ interface FoodItemRepositoryInterface extends BaseRepositoryInterface
     public function getByCategory(int $categoryId): LengthAwarePaginator;
 
     /**
-     * Get best seller food items with optional restaurant filter.
+     * Get best seller food items with optional restaurant filter. Paginated unless per_page=all.
      *
      * @param array $filters
-     * @return LengthAwarePaginator
+     * @return LengthAwarePaginator|Collection
      */
-    public function getBestSellerPaginated(array $filters): LengthAwarePaginator;
+    public function getBestSellerPaginated(array $filters): LengthAwarePaginator|Collection;
 
     /**
      * Find food item by ID with relations.
@@ -48,9 +48,9 @@ interface FoodItemRepositoryInterface extends BaseRepositoryInterface
      *
      * @param int $foodCategoryId
      * @param int $excludeId
-     * @return Collection
+     * @return \Illuminate\Database\Eloquent\Collection
      */
-    public function getRelatedByCategory(int $foodCategoryId, int $excludeId): Collection;
+    public function getRelatedByCategory(int $foodCategoryId, int $excludeId): \Illuminate\Database\Eloquent\Collection;
 
     /**
      * Get food items with pending code confirmation.

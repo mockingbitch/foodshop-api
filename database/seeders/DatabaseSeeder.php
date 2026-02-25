@@ -13,8 +13,10 @@ class DatabaseSeeder extends Seeder
         Schema::disableForeignKeyConstraints();
 
         // Truncate in reverse dependency order to avoid duplicate data on re-seed
+        DB::table('reviews')->truncate();
         DB::table('food_items')->truncate();
         DB::table('restaurants')->truncate();
+        DB::table('news')->truncate();
         DB::table('food_category_translations')->truncate();
         DB::table('food_categories')->truncate();
         DB::table('personal_access_tokens')->truncate();
@@ -33,6 +35,8 @@ class DatabaseSeeder extends Seeder
             FoodCategorySeeder::class,
             RestaurantSeeder::class,
             FoodItemSeeder::class,
+            ReviewSeeder::class,
+            NewsSeeder::class,
         ]);
     }
 }

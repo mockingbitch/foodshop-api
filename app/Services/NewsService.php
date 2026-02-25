@@ -4,7 +4,9 @@ namespace App\Services;
 
 use App\Contracts\Repositories\NewsRepositoryInterface;
 use App\Models\News;
+use App\Support\HtmlSanitizer;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -17,14 +19,25 @@ class NewsService
     ) {}
 
     /**
-     * Paginated list of published news with optional type and search.
+     * List of published news with optional type and search (public). Paginated unless per_page=all.
      *
-     * @param array $filters type?, search?, per_page?
-     * @return LengthAwarePaginator
+     * @param array $filters type?, search?, per_page? (int or 'all')
+     * @return LengthAwarePaginator|Collection
      */
-    public function index(array $filters): LengthAwarePaginator
+    public function index(array $filters): LengthAwarePaginator|Collection
     {
         return $this->newsRepository->getPublishedPaginated($filters);
+    }
+
+    /**
+     * List for admin (all statuses). Filters: type?, search?, status?, per_page?. Paginated unless per_page=all.
+     *
+     * @param array $filters
+     * @return LengthAwarePaginator|Collection
+     */
+    public function adminIndex(array $filters): LengthAwarePaginator|Collection
+    {
+        return $this->newsRepository->getPaginatedForAdmin($filters);
     }
 
     /**
@@ -53,20 +66,24 @@ class NewsService
     }
 
     /**
-     * Create news/course/chef article.
+     * Create news/course/chef article. Content and excerpt are sanitized for WYSIWYG (safe HTML).
      *
      * @param array $data Validated store data
      * @return News
      */
     public function store(array $data): News
     {
+        $data = $this->sanitizeWysiwygFields($data);
+        if (! isset($data['status'])) {
+            $data['status'] = 'published';
+        }
         $news = $this->newsRepository->create($data);
         Log::info('News created', ['news_id' => $news->id, 'type' => $news->type ?? null]);
         return $news;
     }
 
     /**
-     * Update news article.
+     * Update news article. Content and excerpt are sanitized for WYSIWYG (safe HTML).
      *
      * @param int $id
      * @param array $data
@@ -74,10 +91,28 @@ class NewsService
      */
     public function update(int $id, array $data): News
     {
+        $data = $this->sanitizeWysiwygFields($data);
         $news = $this->newsRepository->findOrFail($id);
         $news->update($data);
         Log::info('News updated', ['news_id' => $id]);
         return $news;
+    }
+
+    /**
+     * Sanitize content and excerpt (multilingual HTML) for WYSIWYG display.
+     *
+     * @param array $data
+     * @return array
+     */
+    protected function sanitizeWysiwygFields(array $data): array
+    {
+        if (isset($data['content']) && is_array($data['content'])) {
+            $data['content'] = HtmlSanitizer::sanitizeArray($data['content']);
+        }
+        if (isset($data['excerpt']) && is_array($data['excerpt'])) {
+            $data['excerpt'] = HtmlSanitizer::sanitizeArray($data['excerpt']);
+        }
+        return $data;
     }
 
     /**

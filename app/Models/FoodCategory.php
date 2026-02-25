@@ -42,6 +42,21 @@ class FoodCategory extends Model
         'is_active' => 'boolean',
     ];
 
+    protected $appends = ['name'];
+
+    /**
+     * Multilingual name from translations (en, vn, kr). Empty array if translations not loaded.
+     */
+    public function getNameAttribute(): array
+    {
+        if (! $this->relationLoaded('translations')) {
+            return [];
+        }
+        return $this->translations->mapWithKeys(function ($t) {
+            return [strtolower($t->language_code) => $t->name];
+        })->all();
+    }
+
     /**
      * Get parent category.
      */

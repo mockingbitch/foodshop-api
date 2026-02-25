@@ -6,11 +6,14 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
+/**
+ * Seeds default admin and test owner. Credentials used by Postman collection (postman/FoodShop-API.postman_collection.json).
+ */
 class AdminUserSeeder extends Seeder
 {
     public function run(): void
     {
-        // Create default admin user
+        // Admin: admin@foodshop.com / admin123 (Postman: admin_email, admin_password)
         User::updateOrCreate(
             ['email' => 'admin@foodshop.com'],
             [
@@ -21,7 +24,7 @@ class AdminUserSeeder extends Seeder
             ]
         );
 
-        // Create test restaurant owner
+        // Owner: owner@foodshop.com / owner123 (Postman: owner_email, owner_password)
         User::updateOrCreate(
             ['email' => 'owner@foodshop.com'],
             [

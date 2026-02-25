@@ -5,6 +5,8 @@ namespace App\Repositories;
 use App\Contracts\Repositories\NewsRepositoryInterface;
 use App\Models\News;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * News repository: Eloquent query layer for News (news/course/chef).
@@ -18,28 +20,82 @@ class NewsRepository extends BaseRepository implements NewsRepositoryInterface
     }
 
     /**
-     * Paginated list of published news with optional type and search.
+     * List of published news with optional type and search. Paginated unless per_page=all.
      *
-     * @param array $filters type?, search?, per_page?
-     * @return LengthAwarePaginator
+     * @param array $filters type?, search?, per_page? (int or 'all')
+     * @return LengthAwarePaginator|EloquentCollection
      */
-    public function getPublishedPaginated(array $filters): LengthAwarePaginator
+    public function getPublishedPaginated(array $filters): LengthAwarePaginator|EloquentCollection
     {
         $query = $this->query()->with(['category'])->published();
 
         if (!empty($filters['type'])) {
             $query->type($filters['type']);
         }
-        if (!empty($filters['search'])) {
-            $search = $filters['search'];
-            $query->where(function ($q) use ($search) {
-                $q->whereRaw("JSON_EXTRACT(title, '$.en') LIKE ?", ["%{$search}%"])
-                    ->orWhereRaw("JSON_EXTRACT(title, '$.vn') LIKE ?", ["%{$search}%"])
-                    ->orWhereRaw("JSON_EXTRACT(title, '$.kr') LIKE ?", ["%{$search}%"]);
+        if (! empty($filters['search'])) {
+            $pattern = '%' . mb_strtolower(trim($filters['search']), 'UTF-8') . '%';
+            $query->where(function ($q) use ($pattern) {
+                $driver = DB::getDriverName();
+                if ($driver === 'pgsql') {
+                    $q->whereRaw('LOWER(COALESCE(title->>\'en\', \'\')) LIKE ?', [$pattern])
+                        ->orWhereRaw('LOWER(COALESCE(title->>\'vn\', \'\')) LIKE ?', [$pattern])
+                        ->orWhereRaw('LOWER(COALESCE(title->>\'kr\', \'\')) LIKE ?', [$pattern]);
+                } else {
+                    $q->whereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(title, "$.en"))) LIKE ?', [$pattern])
+                        ->orWhereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(title, "$.vn"))) LIKE ?', [$pattern])
+                        ->orWhereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(title, "$.kr"))) LIKE ?', [$pattern]);
+                }
             });
         }
 
-        return $query->orderBy('published_at', 'desc')->paginate($filters['per_page'] ?? 15);
+        $query->orderBy('published_at', 'desc');
+
+        if (isset($filters['per_page']) && (string) $filters['per_page'] === 'all') {
+            return $query->get();
+        }
+        return $query->paginate((int) ($filters['per_page'] ?? 15));
+    }
+
+    /**
+     * List for admin (all statuses). Optional filters: type, search, status, per_page. Paginated unless per_page=all.
+     *
+     * @param array $filters type?, search?, status?, per_page? (int or 'all')
+     * @return LengthAwarePaginator|EloquentCollection
+     */
+    public function getPaginatedForAdmin(array $filters): LengthAwarePaginator|EloquentCollection
+    {
+        $query = $this->query()->with(['category']);
+
+        if (! empty($filters['type'])) {
+            $query->type($filters['type']);
+        }
+        if (! empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+        if (! empty($filters['search'])) {
+            $pattern = '%' . mb_strtolower(trim($filters['search']), 'UTF-8') . '%';
+            $query->where(function ($q) use ($pattern) {
+                $driver = DB::getDriverName();
+                if ($driver === 'pgsql') {
+                    $q->whereRaw('LOWER(COALESCE(title->>\'en\', \'\')) LIKE ?', [$pattern])
+                        ->orWhereRaw('LOWER(COALESCE(title->>\'vn\', \'\')) LIKE ?', [$pattern])
+                        ->orWhereRaw('LOWER(COALESCE(title->>\'kr\', \'\')) LIKE ?', [$pattern]);
+                } else {
+                    $q->whereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(title, "$.en"))) LIKE ?', [$pattern])
+                        ->orWhereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(title, "$.vn"))) LIKE ?', [$pattern])
+                        ->orWhereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(title, "$.kr"))) LIKE ?', [$pattern]);
+                }
+            });
+        }
+
+        $query->orderByDesc('updated_at');
+
+        if (isset($filters['per_page']) && (string) $filters['per_page'] === 'all') {
+            return $query->get();
+        }
+        $perPage = isset($filters['per_page']) ? (int) $filters['per_page'] : 15;
+        $perPage = min(max($perPage, 1), 100);
+        return $query->paginate($perPage);
     }
 
     /**

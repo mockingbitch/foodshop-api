@@ -8,7 +8,7 @@ use App\Services\ReviewService;
 use Illuminate\Http\JsonResponse;
 
 /**
- * Reviews for food items and restaurants. List approved; create sets status pending.
+ * Reviews for food items and restaurants. Tạo review mặc định approved (hiển thị ngay).
  *
  * @group Reviews
  */
@@ -29,13 +29,13 @@ class ReviewController extends BaseApiController
     }
 
     /**
-     * Create review for food item (public). Status pending until admin approval.
+     * Create review for food item (public). Status mặc định approved.
      */
     public function storeReview(StoreReviewRequest $request, int $foodItemId): JsonResponse
     {
         $review = $this->reviewService->storeReview($foodItemId, $request->validated());
 
-        return $this->created(['review' => $review], 'Review submitted successfully. Awaiting approval.');
+        return $this->created(['review' => $review], 'Review submitted successfully.');
     }
 
     /**
@@ -49,12 +49,12 @@ class ReviewController extends BaseApiController
     }
 
     /**
-     * Create review for restaurant (public). Status pending until admin approval.
+     * Create review for restaurant (public). Status mặc định approved.
      */
     public function storeRestaurantReview(StoreReviewRequest $request, int $restaurantId): JsonResponse
     {
         $review = $this->reviewService->storeRestaurantReview($restaurantId, $request->validated());
 
-        return $this->created(['review' => $review], 'Review submitted successfully. Awaiting approval.');
+        return $this->created(['review' => $review], 'Review submitted successfully.');
     }
 }

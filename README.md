@@ -81,6 +81,12 @@ Các biến quan trọng:
 
 Với Docker, `DB_HOST=db`. Với local, `DB_HOST=127.0.0.1`.
 
+**Ảnh upload (URL 404?)**  
+Ảnh lưu tại `storage/app/public/uploads/` (restaurant | food | news). Để URL dạng `/storage/uploads/...` hoạt động:
+
+- **Khuyến nghị:** Trên server chạy `php artisan storage:link` để tạo symlink `public/storage` → `storage/app/public`.
+- **Nếu không tạo được symlink** (một số hosting): Laravel có route dự phòng trong `routes/web.php` để serve file từ storage khi truy cập `/storage/uploads/...`.
+
 ---
 
 ## ✅ Kiểm tra sau cài đặt

@@ -1,15 +1,15 @@
 <?php
 
-namespace App\Http\Requests\FileUpload;
+namespace App\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * Form request for uploading multiple images (generic).
+ * Form request for updating review status (Admin).
  *
- * Validates: images (required, array, max 5 items), type (optional: restaurant|food|news để lưu đúng thư mục).
+ * Validates: status (required, one of: approved, pending, rejected)
  */
-class UploadImagesRequest extends FormRequest
+class UpdateReviewStatusRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -27,9 +27,7 @@ class UploadImagesRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'images' => 'required|array|max:5',
-            'images.*' => 'required|image|mimes:jpeg,png,jpg,webp|max:5120',
-            'type' => 'nullable|string|in:restaurant,food,news',
+            'status' => 'required|in:approved,pending,rejected',
         ];
     }
 }

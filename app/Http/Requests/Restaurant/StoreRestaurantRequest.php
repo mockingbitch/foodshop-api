@@ -21,6 +21,17 @@ class StoreRestaurantRequest extends FormRequest
     }
 
     /**
+     * Prepare the data for validation (normalize string "true"/"false" to boolean).
+     */
+    protected function prepareForValidation(): void
+    {
+        $merge = $this->normalizeBooleans(['delivery_available']);
+        if ($merge !== []) {
+            $this->merge($merge);
+        }
+    }
+
+    /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
@@ -40,8 +51,26 @@ class StoreRestaurantRequest extends FormRequest
             'email' => 'nullable|email',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
-            'delivery_available' => 'boolean',
+            'delivery_available' => 'sometimes|boolean',
             'remark' => 'nullable|array',
         ];
+    }
+
+    /**
+     * Normalize string "true"/"false" to boolean for given keys.
+     *
+     * @param  array<string>  $keys
+     * @return array<string, bool>
+     */
+    protected function normalizeBooleans(array $keys): array
+    {
+        $merge = [];
+        foreach ($keys as $key) {
+            $value = $this->input($key);
+            if ($value !== null) {
+                $merge[$key] = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? $value;
+            }
+        }
+        return $merge;
     }
 }

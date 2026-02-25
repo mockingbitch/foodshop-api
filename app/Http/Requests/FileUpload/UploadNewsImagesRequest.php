@@ -5,11 +5,12 @@ namespace App\Http\Requests\FileUpload;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * Form request for uploading multiple images (generic).
+ * Form request for uploading news images (featured + gallery).
  *
- * Validates: images (required, array, max 5 items), type (optional: restaurant|food|news để lưu đúng thư mục).
+ * Validates: featured_image (optional, 1 file), gallery_images (optional, max 10),
+ * each: image, mimes jpeg/png/jpg/webp, max 5MB
  */
-class UploadImagesRequest extends FormRequest
+class UploadNewsImagesRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -27,9 +28,9 @@ class UploadImagesRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'images' => 'required|array|max:5',
-            'images.*' => 'required|image|mimes:jpeg,png,jpg,webp|max:5120',
-            'type' => 'nullable|string|in:restaurant,food,news',
+            'featured_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
+            'gallery_images' => 'nullable|array|max:10',
+            'gallery_images.*' => 'required|image|mimes:jpeg,png,jpg,webp|max:5120',
         ];
     }
 }

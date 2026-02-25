@@ -2,15 +2,36 @@
 
 namespace App\Http\Traits;
 
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 
 /**
  * Trait for standardised API JSON responses.
  *
  * Usage in controllers: return $this->success($data); return $this->error('Not found', 404);
+ * For list APIs (paginated or per_page=all): return $this->successList($data);
  */
 trait ApiResponseTrait
 {
+    /**
+     * Success response for list APIs. Accepts LengthAwarePaginator or Collection (when per_page=all).
+     * Ensures response shape: data.data = items, data.total (and pagination meta when paginated).
+     *
+     * @param LengthAwarePaginator|Collection $data
+     */
+    protected function successList(LengthAwarePaginator|Collection $data, ?string $message = null, int $statusCode = 200): JsonResponse
+    {
+        if ($data instanceof Collection) {
+            $payload = [
+                'data' => $data->values()->all(),
+                'total' => $data->count(),
+            ];
+            return $this->success($payload, $message, $statusCode);
+        }
+        return $this->success($data, $message, $statusCode);
+    }
+
     /**
      * Success response (200).
      *

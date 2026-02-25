@@ -11,12 +11,20 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 interface NewsRepositoryInterface extends BaseRepositoryInterface
 {
     /**
-     * Paginated list of published news with optional type and search.
+     * List of published news with optional type and search. Paginated unless per_page=all.
      *
      * @param array $filters
-     * @return LengthAwarePaginator
+     * @return LengthAwarePaginator|\Illuminate\Database\Eloquent\Collection
      */
-    public function getPublishedPaginated(array $filters): LengthAwarePaginator;
+    public function getPublishedPaginated(array $filters): LengthAwarePaginator|\Illuminate\Database\Eloquent\Collection;
+
+    /**
+     * List for admin (all statuses). Filters: type?, search?, status?, per_page?. Paginated unless per_page=all.
+     *
+     * @param array $filters
+     * @return LengthAwarePaginator|\Illuminate\Database\Eloquent\Collection
+     */
+    public function getPaginatedForAdmin(array $filters): LengthAwarePaginator|\Illuminate\Database\Eloquent\Collection;
 
     /**
      * Get published news by type.

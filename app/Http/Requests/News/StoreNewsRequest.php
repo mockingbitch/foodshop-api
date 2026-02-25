@@ -7,10 +7,9 @@ use Illuminate\Foundation\Http\FormRequest;
 /**
  * Form request for creating news/course/chef article.
  *
- * Validates: type (news|course|chef), category_id, title (multilingual),
- * content (multilingual), excerpt, featured_image, gallery_images, video_link,
- * chef_name, chef_specialty, course_price, course_duration, max_participants,
- * status (published|draft|archived), published_at
+ * Content and excerpt are WYSIWYG: HTML per language (e.g. content.en, content.vn).
+ * Allowed tags: p, h1–h6, ul, ol, li, strong, em, a, img, blockquote, table, etc.
+ * Server sanitizes HTML before save. Client should render with v-html / dangerouslySetInnerHTML.
  */
 class StoreNewsRequest extends FormRequest
 {
@@ -45,7 +44,7 @@ class StoreNewsRequest extends FormRequest
             'course_price' => 'nullable|numeric',
             'course_duration' => 'nullable|integer',
             'max_participants' => 'nullable|integer',
-            'status' => 'required|in:published,draft,archived',
+            'status' => 'sometimes|in:published,draft,archived',
             'published_at' => 'nullable|date',
         ];
     }

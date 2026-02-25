@@ -7,8 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 /**
  * Form request for updating news/course/chef article.
  *
- * Validates: type, category_id, title, content, excerpt, featured_image,
- * gallery_images, video_link, status, published_at (all optional/sometimes)
+ * Content and excerpt are WYSIWYG (HTML per language). Server sanitizes before save.
  */
 class UpdateNewsRequest extends FormRequest
 {
