@@ -51,9 +51,10 @@ Route::prefix('auth')->group(function () {
     });
 });
 
-// Owner Profile (protected)
+// Owner Profile & Dashboard (protected)
 Route::middleware('auth:api')->prefix('owner')->group(function () {
     Route::put('/profile', [AuthController::class, 'updateOwnerProfile']);
+    Route::get('/restaurants', [RestaurantController::class, 'ownerRestaurants']);
 });
 
 // ============================================================

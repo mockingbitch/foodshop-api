@@ -147,6 +147,22 @@ class RestaurantRepository extends BaseRepository implements RestaurantRepositor
     }
 
     /**
+     * Paginated list of restaurants by owner (user_id). Always all statuses (dashboard); newest first.
+     *
+     * @param int $userId
+     * @param array $filters per_page?
+     * @return LengthAwarePaginator
+     */
+    public function getByOwnerId(int $userId, array $filters = []): LengthAwarePaginator
+    {
+        return $this->query()
+            ->with(['country', 'restaurantType'])
+            ->where('user_id', $userId)
+            ->orderBy('id', 'desc')
+            ->paginate($filters['per_page'] ?? 15);
+    }
+
+    /**
      * Count all restaurants.
      */
     public function count(): int

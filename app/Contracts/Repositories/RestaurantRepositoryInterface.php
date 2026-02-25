@@ -69,6 +69,15 @@ interface RestaurantRepositoryInterface extends BaseRepositoryInterface
      */
     public function getLastByCodePrefix(string $codePrefix): ?Restaurant;
 
+    /**
+     * Paginated list of restaurants by owner (user_id). Always all statuses (dashboard); newest first.
+     *
+     * @param int $userId
+     * @param array $filters per_page?
+     * @return LengthAwarePaginator
+     */
+    public function getByOwnerId(int $userId, array $filters = []): LengthAwarePaginator;
+
     public function count(): int;
 
     public function countActive(): int;

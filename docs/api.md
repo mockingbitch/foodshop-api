@@ -85,6 +85,14 @@ Revokes current access token.
 }
 ```
 
+### List Owner's Restaurants (Dashboard)
+`GET /api/owner/restaurants`  
+🔒 **Auth required (owner)**
+
+Trả về danh sách nhà hàng của owner đang đăng nhập. **Luôn lấy tất cả trạng thái** (pending, active, hidden), mới nhất trước. Dùng cho trang quản lý/dashboard.
+
+**Query:** `per_page?` (mặc định 15)
+
 ---
 
 ## Reference Data

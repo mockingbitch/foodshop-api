@@ -81,6 +81,18 @@ class RestaurantService
     }
 
     /**
+     * Get paginated list of restaurants belonging to owner (for dashboard). Always all statuses; newest first.
+     *
+     * @param User $user
+     * @param array $filters per_page?
+     * @return LengthAwarePaginator
+     */
+    public function getByOwner(User $user, array $filters = []): LengthAwarePaginator
+    {
+        return $this->restaurantRepository->getByOwnerId($user->id, $filters);
+    }
+
+    /**
      * Create restaurant for owner. Status pending until admin approval.
      *
      * @param User $user
@@ -94,7 +106,7 @@ class RestaurantService
         $restaurant = $this->restaurantRepository->create(array_merge($data, [
             'code' => $code,
             'user_id' => $user->id,
-            'status' => 'pending',
+            'status' => 'active',
         ]));
 
         Log::info('Restaurant created', ['restaurant_id' => $restaurant->id, 'user_id' => $user->id, 'code' => $code]);

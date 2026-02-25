@@ -100,4 +100,14 @@ class RestaurantController extends BaseApiController
 
         return $this->success(null, 'Restaurant deleted successfully');
     }
+
+    /**
+     * Get list of restaurants belonging to the authenticated owner (dashboard). Always all statuses; newest first.
+     */
+    public function ownerRestaurants(Request $request): JsonResponse
+    {
+        $restaurants = $this->restaurantService->getByOwner($request->user(), $request->only(['per_page']));
+
+        return $this->success($restaurants);
+    }
 }
