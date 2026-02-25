@@ -22,13 +22,16 @@ class RestaurantRepository extends BaseRepository implements RestaurantRepositor
     /**
      * List of active restaurants with filters. Paginated unless per_page=all.
      *
-     * @param array $filters country_id?, restaurant_type_id?, delivery_available?, search?, per_page? (int or 'all')
+     * @param array $filters owner_id?, country_id?, restaurant_type_id?, delivery_available?, search?, per_page? (int or 'all')
      * @return LengthAwarePaginator|EloquentCollection
      */
     public function getActivePaginated(array $filters): LengthAwarePaginator|EloquentCollection
     {
         $query = $this->query()->with(['country', 'restaurantType', 'user'])->active();
 
+        if (! empty($filters['owner_id'])) {
+            $query->where('user_id', (int) $filters['owner_id']);
+        }
         if (! empty($filters['country_id'])) {
             $query->where('country_id', $filters['country_id']);
         }
