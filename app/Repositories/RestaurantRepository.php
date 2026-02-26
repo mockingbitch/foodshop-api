@@ -46,6 +46,7 @@ class RestaurantRepository extends BaseRepository implements RestaurantRepositor
             $pattern = $this->likePatternCaseInsensitive($filters['search']);
             $query->where(function ($q) use ($pattern) {
                 $this->addSearchRestaurantNameCity($q, $pattern);
+                $this->addSearchByFoodItemName($q, $pattern);
             });
         }
 
@@ -229,6 +230,30 @@ class RestaurantRepository extends BaseRepository implements RestaurantRepositor
     private function likePatternCaseInsensitive(string $keyword): string
     {
         return '%' . mb_strtolower(trim($keyword), 'UTF-8') . '%';
+    }
+
+    /**
+     * Thêm điều kiện: hoặc nhà hàng có ít nhất một món ăn (active) mà tên món khớp keyword.
+     */
+    private function addSearchByFoodItemName(\Illuminate\Database\Eloquent\Builder $q, string $pattern): void
+    {
+        $driver = DB::getDriverName();
+        $q->orWhereHas('foodItems', function (\Illuminate\Database\Eloquent\Builder $foodQuery) use ($pattern, $driver) {
+            $foodQuery->active();
+            if ($driver === 'pgsql') {
+                $foodQuery->where(function ($sub) use ($pattern) {
+                    $sub->whereRaw('LOWER(COALESCE(name->>\'en\', \'\')) LIKE ?', [$pattern])
+                        ->orWhereRaw('LOWER(COALESCE(name->>\'vn\', \'\')) LIKE ?', [$pattern])
+                        ->orWhereRaw('LOWER(COALESCE(name->>\'kr\', \'\')) LIKE ?', [$pattern]);
+                });
+            } else {
+                $foodQuery->where(function ($sub) use ($pattern) {
+                    $sub->whereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, "$.en"))) LIKE ?', [$pattern])
+                        ->orWhereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, "$.vn"))) LIKE ?', [$pattern])
+                        ->orWhereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, "$.kr"))) LIKE ?', [$pattern]);
+                });
+            }
+        });
     }
 
     /**
