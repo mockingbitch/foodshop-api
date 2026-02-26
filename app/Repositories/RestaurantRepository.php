@@ -21,8 +21,9 @@ class RestaurantRepository extends BaseRepository implements RestaurantRepositor
 
     /**
      * List of active restaurants with filters. Paginated unless per_page=all.
+     * Optional nearby: pass lat + lng (and optionally radius in km) to filter and order by distance.
      *
-     * @param array $filters owner_id?, country_id?, restaurant_type_id?, delivery_available?, search?, per_page? (int or 'all')
+     * @param array $filters owner_id?, country_id?, restaurant_type_id?, delivery_available?, search?, lat?, lng?, radius?, per_page? (int or 'all')
      * @return LengthAwarePaginator|EloquentCollection
      */
     public function getActivePaginated(array $filters): LengthAwarePaginator|EloquentCollection
@@ -48,10 +49,30 @@ class RestaurantRepository extends BaseRepository implements RestaurantRepositor
             });
         }
 
+        // Optional nearby: filter by distance and order by distance (only when both lat & lng provided)
+        if ($this->hasNearbyFilters($filters)) {
+            $query->nearby(
+                (float) $filters['lat'],
+                (float) $filters['lng'],
+                (float) ($filters['radius'] ?? 10)
+            );
+        }
+
         if (isset($filters['per_page']) && (string) $filters['per_page'] === 'all') {
             return $query->get();
         }
         return $query->paginate((int) ($filters['per_page'] ?? 15));
+    }
+
+    /**
+     * Check if filters include valid lat and lng for nearby.
+     */
+    private function hasNearbyFilters(array $filters): bool
+    {
+        $lat = $filters['lat'] ?? null;
+        $lng = $filters['lng'] ?? null;
+        return $lat !== null && $lat !== '' && $lng !== null && $lng !== ''
+            && is_numeric($lat) && is_numeric($lng);
     }
 
     /**

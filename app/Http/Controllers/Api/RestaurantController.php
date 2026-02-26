@@ -22,12 +22,15 @@ class RestaurantController extends BaseApiController
     ) {}
 
     /**
-     * Get List of Restaurants (paginated unless per_page=all; filters: owner_id, country_id, restaurant_type_id, delivery_available, search, per_page)
+     * Get List of Restaurants (paginated unless per_page=all).
+     * Filters: owner_id, country_id, restaurant_type_id, delivery_available, search, lat, lng, radius (nearby), per_page
      */
     public function index(Request $request): JsonResponse
     {
         $restaurants = $this->restaurantService->index($request->only([
-            'owner_id', 'country_id', 'restaurant_type_id', 'delivery_available', 'search', 'per_page'
+            'owner_id', 'country_id', 'restaurant_type_id', 'delivery_available', 'search',
+            'lat', 'lng', 'radius',
+            'per_page'
         ]));
 
         return $this->successList($restaurants);
@@ -44,17 +47,18 @@ class RestaurantController extends BaseApiController
     }
 
     /**
-     * Get restaurants within radius (km) of latitude/longitude
+     * Get restaurants within radius (km) of lat/lng (paginated).
      */
     public function getNearby(GetNearbyRestaurantRequest $request): JsonResponse
     {
         $restaurants = $this->restaurantService->getNearby(
-            $request->latitude,
-            $request->longitude,
-            $request->radius
+            $request->lat,
+            $request->lng,
+            $request->input('radius', 10),
+            (int) $request->input('per_page', 15)
         );
 
-        return $this->success($restaurants);
+        return $this->successList($restaurants);
     }
 
     /**
