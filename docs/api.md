@@ -120,9 +120,9 @@ Trả về danh sách nhà hàng của owner đang đăng nhập. **Luôn lấy 
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| GET | `/api/restaurants` | No | List active restaurants (paginated). Query: `owner_id`, `country_id`, `restaurant_type_id`, `delivery_available`, `search`, `per_page` |
+| GET | `/api/restaurants` | No | List active restaurants (paginated). Query: `owner_id`, `country_id`, `restaurant_type_id`, `delivery_available`, `search`, `lat`, `lng`, `radius` (nearby), `per_page` — có thể kết hợp search + nearby |
 | GET | `/api/restaurants/search` | No | Search by name. Query: `name`, `per_page` |
-| GET | `/api/restaurants/nearby` | No | Restaurants within radius. Query: `latitude`, `longitude`, `radius_km` |
+| GET | `/api/restaurants/nearby` | No | Chỉ lọc theo khoảng cách (paginated). Query: `lat`, `lng`, `radius`, `per_page` |
 | GET | `/api/restaurants/{id}` | No | Restaurant detail with best_sellers, outside_images, inside_images |
 | POST | `/api/restaurants` | Owner | Create restaurant (status: pending) |
 | PUT | `/api/restaurants/{id}` | Owner/Admin | Update restaurant |

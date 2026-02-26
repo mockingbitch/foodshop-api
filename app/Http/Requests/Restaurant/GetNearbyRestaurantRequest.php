@@ -7,7 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 /**
  * Form request for getting restaurants nearby by coordinates.
  *
- * Validates: latitude (required), longitude (required), radius (optional, 1-100 km)
+ * Validates: lat (required), lng (required), radius (optional, 1-100 km), per_page (optional)
  */
 class GetNearbyRestaurantRequest extends FormRequest
 {
@@ -27,9 +27,10 @@ class GetNearbyRestaurantRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'latitude' => 'required|numeric',
-            'longitude' => 'required|numeric',
+            'lat' => 'required|numeric',
+            'lng' => 'required|numeric',
             'radius' => 'nullable|numeric|min:1|max:100',
+            'per_page' => 'nullable|integer|min:1|max:100',
         ];
     }
 }

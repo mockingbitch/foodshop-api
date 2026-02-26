@@ -23,8 +23,9 @@ class RestaurantService
 
     /**
      * List of active restaurants with optional filters. Paginated unless per_page=all.
+     * Optional nearby: pass lat, lng (and radius in km) to filter and sort by distance.
      *
-     * @param array $filters owner_id?, country_id?, restaurant_type_id?, delivery_available?, search?, per_page? (int or 'all')
+     * @param array $filters owner_id?, country_id?, restaurant_type_id?, delivery_available?, search?, lat?, lng?, radius?, per_page? (int or 'all')
      * @return LengthAwarePaginator|Collection
      */
     public function index(array $filters): LengthAwarePaginator|Collection
