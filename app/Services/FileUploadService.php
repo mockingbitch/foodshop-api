@@ -2,34 +2,35 @@
 
 namespace App\Services;
 
+use App\Helpers\ImageUploadHelper;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\URL;
+use RuntimeException;
 
 /**
- * Image upload business logic: process and store images (resize, encode jpg, save to public disk).
- * Uses PHP GD. Folders tách biệt: restaurant | food | news.
+ * Image upload: Cloudinary hoặc Imgur (theo IMAGE_UPLOAD_DRIVER trong .env).
+ * Ảnh <200KB: giữ nguyên. Ảnh >=200KB: resize + nén về ~200-500KB.
+ * Folders: restaurant | food | news.
  */
 class FileUploadService
 {
-    /** Thư mục gốc upload (storage/app/public) */
-    public const UPLOAD_BASE = 'uploads';
+    public function __construct(
+        protected ImageProcessorService $imageProcessor
+    ) {}
+    /** Ảnh nhà hàng: restaurant/outside | restaurant/inside */
+    public const FOLDER_RESTAURANT = 'restaurant';
 
-    /** Ảnh nhà hàng: uploads/restaurant/outside | uploads/restaurant/inside */
-    public const FOLDER_RESTAURANT = 'uploads/restaurant';
+    /** Ảnh món ăn: food/main | food/extra */
+    public const FOLDER_FOOD = 'food';
 
-    /** Ảnh món ăn: uploads/food/main | uploads/food/extra */
-    public const FOLDER_FOOD = 'uploads/food';
-
-    /** Ảnh tin tức: uploads/news/featured | uploads/news/gallery */
-    public const FOLDER_NEWS = 'uploads/news';
+    /** Ảnh tin tức: news/featured | news/gallery */
+    public const FOLDER_NEWS = 'news';
 
     /**
-     * Upload multiple images to folder. Mặc định lưu vào food.
+     * Upload multiple images to folder.
      *
      * @param UploadedFile[] $images
-     * @param string $folder Base folder (dùng FOLDER_RESTAURANT | FOLDER_FOOD | FOLDER_NEWS hoặc subfolder)
+     * @param string $folder Base folder (FOLDER_RESTAURANT | FOLDER_FOOD | FOLDER_NEWS)
      * @return array List of stored image URLs
      */
     public function uploadImages(array $images, string $folder = self::FOLDER_FOOD): array
@@ -43,7 +44,7 @@ class FileUploadService
     }
 
     /**
-     * Upload restaurant images: outside (max 2), inside (max 5). Lưu vào uploads/restaurant/*.
+     * Upload restaurant images: outside (max 2), inside (max 5).
      *
      * @param UploadedFile[]|null $outsideImages
      * @param UploadedFile[]|null $insideImages
@@ -53,12 +54,12 @@ class FileUploadService
     {
         $result = ['outside_images' => [], 'inside_images' => []];
 
-        if (!empty($outsideImages)) {
+        if (! empty($outsideImages)) {
             foreach ($outsideImages as $image) {
                 $result['outside_images'][] = $this->processAndStoreImage($image, self::FOLDER_RESTAURANT . '/outside');
             }
         }
-        if (!empty($insideImages)) {
+        if (! empty($insideImages)) {
             foreach ($insideImages as $image) {
                 $result['inside_images'][] = $this->processAndStoreImage($image, self::FOLDER_RESTAURANT . '/inside');
             }
@@ -71,7 +72,7 @@ class FileUploadService
     }
 
     /**
-     * Upload food item images: main_image (required) + extra_images (optional). Lưu vào uploads/food/*.
+     * Upload food item images: main_image (required) + extra_images (optional).
      *
      * @param UploadedFile $mainImage
      * @param UploadedFile[]|null $extraImages
@@ -84,7 +85,7 @@ class FileUploadService
             'extra_images' => [],
         ];
 
-        if (!empty($extraImages)) {
+        if (! empty($extraImages)) {
             foreach ($extraImages as $image) {
                 $result['extra_images'][] = $this->processAndStoreImage($image, self::FOLDER_FOOD . '/extra');
             }
@@ -94,7 +95,7 @@ class FileUploadService
     }
 
     /**
-     * Upload news images: featured_image (optional, 1 file) + gallery_images (optional, max 10). Lưu vào uploads/news/*.
+     * Upload news images: featured_image (optional) + gallery_images (optional, max 10).
      *
      * @param UploadedFile|null $featuredImage
      * @param UploadedFile[]|null $galleryImages
@@ -124,95 +125,46 @@ class FileUploadService
         return $result;
     }
 
+    /** Ngưỡng (bytes): ảnh nhỏ hơn thì giữ nguyên, không nén. */
+    private const SKIP_PROCESSING_THRESHOLD = 200_000; // 200KB
+
     /**
-     * Resize image (max width 1200, aspect ratio), encode as jpg 85%, store to public disk.
-     * Uses PHP GD.
+     * Upload ảnh: nếu <200KB giữ nguyên, nếu >=200KB thì nén về ~200-500KB.
      *
      * @param UploadedFile $image
-     * @param string $folder
+     * @param string $folder folder path (vd: restaurant/outside, food/main)
      * @return string Public URL of stored image
      */
     public function processAndStoreImage(UploadedFile $image, string $folder): string
     {
-        $path = $folder . '/' . time() . '_' . uniqid() . '.jpg';
+        $path = $image->getRealPath();
+        $fileSize = filesize($path);
+
+        if ($fileSize !== false && $fileSize < self::SKIP_PROCESSING_THRESHOLD) {
+            $uploadPath = $path;
+            $tempPath = null;
+        } else {
+            $blob = $this->imageProcessor->compressToTarget($image);
+            $tempPath = sys_get_temp_dir() . '/' . 'upload_' . uniqid() . '.jpg';
+            file_put_contents($tempPath, $blob);
+            $uploadPath = $tempPath;
+        }
 
         try {
-            $blob = $this->resizeAndEncodeJpeg($image, 1200, 85);
-            Storage::disk('public')->put($path, $blob);
-            return $this->getPublicUrl($path);
-        } catch (\Throwable $e) {
-            Log::error('Image upload failed', ['folder' => $folder, 'error' => $e->getMessage()]);
-            throw $e;
+            $url = ImageUploadHelper::upload($uploadPath, $folder);
+
+            if (! $url) {
+                Log::error('Image upload failed', ['folder' => $folder]);
+                throw new RuntimeException(
+                    'Image upload failed. Check CLOUDINARY_* or IMGUR_CLIENT_ID in .env.'
+                );
+            }
+
+            return $url;
+        } finally {
+            if ($tempPath !== null && is_file($tempPath)) {
+                unlink($tempPath);
+            }
         }
-    }
-
-    /**
-     * Load image via GD, resize (max width, keep aspect ratio, no upsize), encode as JPEG.
-     *
-     * @param UploadedFile $file
-     * @param int $maxWidth
-     * @param int $quality 1-100
-     * @return string Binary JPEG content
-     */
-    private function resizeAndEncodeJpeg(UploadedFile $file, int $maxWidth = 1200, int $quality = 85): string
-    {
-        $path = $file->getRealPath();
-        $mime = $file->getMimeType();
-
-        $source = match (true) {
-            str_contains($mime, 'jpeg') || str_contains($mime, 'jpg') => imagecreatefromjpeg($path),
-            str_contains($mime, 'png') => imagecreatefrompng($path),
-            str_contains($mime, 'gif') => imagecreatefromgif($path),
-            str_contains($mime, 'webp') => imagecreatefromwebp($path),
-            default => throw new \InvalidArgumentException('Unsupported image type: ' . $mime),
-        };
-
-        if ($source === false) {
-            throw new \RuntimeException('Failed to load image.');
-        }
-
-        $width = imagesx($source);
-        $height = imagesy($source);
-        if ($width <= 0 || $height <= 0) {
-            imagedestroy($source);
-            throw new \RuntimeException('Invalid image dimensions.');
-        }
-
-        if ($width <= $maxWidth) {
-            $newWidth = $width;
-            $newHeight = $height;
-        } else {
-            $newWidth = $maxWidth;
-            $newHeight = (int) round($height * ($maxWidth / $width));
-        }
-
-        $dest = imagecreatetruecolor($newWidth, $newHeight);
-        if ($dest === false) {
-            imagedestroy($source);
-            throw new \RuntimeException('Failed to create destination image.');
-        }
-
-        imagecopyresampled($dest, $source, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
-        imagedestroy($source);
-
-        ob_start();
-        imagejpeg($dest, null, $quality);
-        $blob = ob_get_clean();
-        imagedestroy($dest);
-
-        if ($blob === false || $blob === '') {
-            throw new \RuntimeException('Failed to encode JPEG.');
-        }
-
-        return $blob;
-    }
-
-    /**
-     * Trả về URL đầy đủ (absolute) của ảnh trên public disk.
-     */
-    private function getPublicUrl(string $path): string
-    {
-        $url = Storage::disk('public')->url($path);
-        return str_starts_with($url, 'http') ? $url : URL::to($url);
     }
 }
