@@ -34,6 +34,7 @@ class ReviewRepository extends BaseRepository implements ReviewRepositoryInterfa
             ->where('reviewable_id', $foodItemId)
             ->approved()
             ->latest()
+            ->orderByDesc('id')
             ->paginate($perPage);
     }
 
@@ -51,6 +52,7 @@ class ReviewRepository extends BaseRepository implements ReviewRepositoryInterfa
             ->where('reviewable_id', $restaurantId)
             ->approved()
             ->latest()
+            ->orderByDesc('id')
             ->paginate($perPage);
     }
 
@@ -79,7 +81,7 @@ class ReviewRepository extends BaseRepository implements ReviewRepositoryInterfa
      */
     public function indexWithFilters(array $filters): LengthAwarePaginator|EloquentCollection
     {
-        $query = $this->query()->with('reviewable')->latest();
+        $query = $this->query()->with('reviewable')->latest()->orderByDesc('id');
 
         if (! empty($filters['status'])) {
             $query->where('status', $filters['status']);

@@ -37,7 +37,10 @@ class FoodCategoryRepository extends BaseRepository implements FoodCategoryRepos
             $query->where('parent_id', $filters['parent_id']);
         }
 
-        return $query->orderBy('sort_order')->get();
+        return $query
+            ->orderBy('sort_order')
+            ->orderByDesc('id')
+            ->get();
     }
 
     /**

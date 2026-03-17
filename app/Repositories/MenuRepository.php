@@ -29,6 +29,7 @@ class MenuRepository extends BaseRepository implements MenuRepositoryInterface
             ->where('restaurant_id', $restaurantId)
             ->active()
             ->orderBy('sort_order')
+            ->orderByDesc('id')
             ->get();
     }
 

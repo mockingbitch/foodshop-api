@@ -24,7 +24,11 @@ class LanguageRepository extends BaseRepository implements LanguageRepositoryInt
      */
     public function getActiveAll(): Collection
     {
-        return $this->query()->active()->orderBy('sort_order')->get();
+        return $this->query()
+            ->active()
+            ->orderBy('sort_order')
+            ->orderByDesc('id')
+            ->get();
     }
 
     /**

@@ -49,6 +49,7 @@ class NewsRepository extends BaseRepository implements NewsRepositoryInterface
         }
 
         $query->orderBy('published_at', 'desc');
+        $query->orderBy('id', 'desc');
 
         if (isset($filters['per_page']) && (string) $filters['per_page'] === 'all') {
             return $query->get();
@@ -89,6 +90,7 @@ class NewsRepository extends BaseRepository implements NewsRepositoryInterface
         }
 
         $query->orderByDesc('updated_at');
+        $query->orderByDesc('id');
 
         if (isset($filters['per_page']) && (string) $filters['per_page'] === 'all') {
             return $query->get();
@@ -111,6 +113,7 @@ class NewsRepository extends BaseRepository implements NewsRepositoryInterface
             ->published()
             ->type($type)
             ->orderBy('published_at', 'desc')
+            ->orderBy('id', 'desc')
             ->paginate(15);
     }
 

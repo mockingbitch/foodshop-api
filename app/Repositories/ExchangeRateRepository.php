@@ -25,7 +25,10 @@ class ExchangeRateRepository extends BaseRepository implements ExchangeRateRepos
      */
     public function getByDate(string $date): Collection
     {
-        return $this->query()->where('rate_date', $date)->get();
+        return $this->query()
+            ->where('rate_date', $date)
+            ->orderByDesc('id')
+            ->get();
     }
 
     /**
