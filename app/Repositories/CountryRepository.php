@@ -24,6 +24,9 @@ class CountryRepository extends BaseRepository implements CountryRepositoryInter
      */
     public function getActiveAll(): Collection
     {
-        return $this->query()->active()->get();
+        return $this->query()
+            ->active()
+            ->orderByDesc('id')
+            ->get();
     }
 }

@@ -58,6 +58,7 @@ class RestaurantRepository extends BaseRepository implements RestaurantRepositor
                 (float) ($filters['radius'] ?? 10)
             );
         }
+        $query->orderByDesc('id');
 
         if (isset($filters['per_page']) && (string) $filters['per_page'] === 'all') {
             return $query->get();
@@ -93,6 +94,8 @@ class RestaurantRepository extends BaseRepository implements RestaurantRepositor
             });
         }
 
+        $query->orderByDesc('id');
+
         if (isset($filters['per_page']) && (string) $filters['per_page'] === 'all') {
             return $query->get();
         }
@@ -113,6 +116,7 @@ class RestaurantRepository extends BaseRepository implements RestaurantRepositor
             ->with(['country', 'restaurantType'])
             ->active()
             ->nearby($latitude, $longitude, $radiusKm)
+            ->orderByDesc('id')
             ->get();
     }
 
@@ -142,6 +146,8 @@ class RestaurantRepository extends BaseRepository implements RestaurantRepositor
         if (! empty($filters['status'])) {
             $query->where('status', $filters['status']);
         }
+
+        $query->orderByDesc('id');
 
         if (isset($filters['per_page']) && (string) $filters['per_page'] === 'all') {
             return $query->get();

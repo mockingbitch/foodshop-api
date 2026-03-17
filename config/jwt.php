@@ -14,7 +14,7 @@ return [
         'passphrase' => env('JWT_PASSPHRASE'),
     ],
 
-    'ttl' => env('JWT_TTL', 60),
+    'ttl' => (int) env('JWT_TTL', 3600),
 
     'refresh_ttl' => env('JWT_REFRESH_TTL', 20160),
 

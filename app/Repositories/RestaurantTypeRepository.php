@@ -24,6 +24,9 @@ class RestaurantTypeRepository extends BaseRepository implements RestaurantTypeR
      */
     public function getActiveAll(): Collection
     {
-        return $this->query()->active()->get();
+        return $this->query()
+            ->active()
+            ->orderByDesc('id')
+            ->get();
     }
 }

@@ -61,6 +61,7 @@ class FoodItemRepository extends BaseRepository implements FoodItemRepositoryInt
                 }
             });
         }
+        $query->orderByDesc('id');
 
         if (isset($filters['per_page']) && (string) $filters['per_page'] === 'all') {
             return $query->get();
@@ -81,6 +82,7 @@ class FoodItemRepository extends BaseRepository implements FoodItemRepositoryInt
             ->active()
             ->confirmedCode()
             ->where('food_category_id', $categoryId)
+            ->orderByDesc('id')
             ->paginate(15);
     }
 
@@ -101,6 +103,7 @@ class FoodItemRepository extends BaseRepository implements FoodItemRepositoryInt
         if (!empty($filters['restaurant_id'])) {
             $query->where('restaurant_id', $filters['restaurant_id']);
         }
+        $query->orderByDesc('id');
 
         if (isset($filters['per_page']) && (string) $filters['per_page'] === 'all') {
             return $query->get();
@@ -136,6 +139,7 @@ class FoodItemRepository extends BaseRepository implements FoodItemRepositoryInt
             ->confirmedCode()
             ->where('food_category_id', $foodCategoryId)
             ->where('id', '!=', $excludeId)
+            ->orderByDesc('id')
             ->limit(6)
             ->get();
     }
@@ -151,6 +155,7 @@ class FoodItemRepository extends BaseRepository implements FoodItemRepositoryInt
         return $this->query()
             ->with(['restaurant', 'foodCategory.translations'])
             ->pendingCodeConfirmation()
+            ->orderByDesc('id')
             ->paginate($perPage);
     }
 
@@ -171,6 +176,7 @@ class FoodItemRepository extends BaseRepository implements FoodItemRepositoryInt
             $query->where('status', $filters['status']);
         }
 
+        $query->orderByDesc('id');
         return $query->paginate(20);
     }
 
