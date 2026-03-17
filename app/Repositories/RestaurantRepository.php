@@ -40,7 +40,10 @@ class RestaurantRepository extends BaseRepository implements RestaurantRepositor
             $query->where('restaurant_type_id', $filters['restaurant_type_id']);
         }
         if (isset($filters['delivery_available'])) {
-            $query->where('delivery_available', (bool) $filters['delivery_available']);
+            $bool = filter_var($filters['delivery_available'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+            if ($bool !== null) {
+                $query->where('delivery_available', $bool);
+            }
         }
         if (! empty($filters['search'])) {
             $pattern = $this->likePatternCaseInsensitive($filters['search']);

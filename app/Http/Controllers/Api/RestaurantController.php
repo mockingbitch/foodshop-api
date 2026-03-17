@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\BaseApiController;
+use App\Http\Requests\Restaurant\IndexRestaurantRequest;
 use App\Http\Requests\Restaurant\GetNearbyRestaurantRequest;
 use App\Http\Requests\Restaurant\StoreRestaurantRequest;
 use App\Http\Requests\Restaurant\UpdateRestaurantRequest;
 use App\Services\RestaurantService;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
 /**
@@ -25,13 +25,9 @@ class RestaurantController extends BaseApiController
      * Get List of Restaurants (paginated unless per_page=all).
      * Filters: owner_id, country_id, restaurant_type_id, delivery_available, search, lat, lng, radius (nearby), per_page
      */
-    public function index(Request $request): JsonResponse
+    public function index(IndexRestaurantRequest $request): JsonResponse
     {
-        $restaurants = $this->restaurantService->index($request->only([
-            'owner_id', 'country_id', 'restaurant_type_id', 'delivery_available', 'search',
-            'lat', 'lng', 'radius',
-            'per_page'
-        ]));
+        $restaurants = $this->restaurantService->index($request->validated());
 
         return $this->successList($restaurants);
     }
@@ -39,7 +35,7 @@ class RestaurantController extends BaseApiController
     /**
      * Search restaurants by name (paginated unless per_page=all)
      */
-    public function search(Request $request): JsonResponse
+    public function search(\Illuminate\Http\Request $request): JsonResponse
     {
         $restaurants = $this->restaurantService->search($request->only(['name', 'per_page']));
 
