@@ -7,6 +7,7 @@ use App\Models\Restaurant;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Restaurant repository: Eloquent query layer for Restaurant model.
@@ -78,31 +79,6 @@ class RestaurantRepository extends BaseRepository implements RestaurantRepositor
         $lng = $filters['lng'] ?? null;
         return $lat !== null && $lat !== '' && $lng !== null && $lng !== ''
             && is_numeric($lat) && is_numeric($lng);
-    }
-
-    /**
-     * Search active restaurants by name (JSON fields). Paginated unless per_page=all.
-     *
-     * @param array $filters name?, per_page? (int or 'all')
-     * @return LengthAwarePaginator|EloquentCollection
-     */
-    public function searchByName(array $filters): LengthAwarePaginator|EloquentCollection
-    {
-        $query = $this->query()->with(['country', 'restaurantType'])->active();
-
-        if (! empty($filters['name'])) {
-            $pattern = $this->likePatternCaseInsensitive($filters['name']);
-            $query->where(function ($q) use ($pattern) {
-                $this->addSearchRestaurantName($q, $pattern);
-            });
-        }
-
-        $query->orderByDesc('id');
-
-        if (isset($filters['per_page']) && (string) $filters['per_page'] === 'all') {
-            return $query->get();
-        }
-        return $query->paginate((int) ($filters['per_page'] ?? 15));
     }
 
     /**
