@@ -7,7 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 /**
  * Form request for updating an existing food item.
  *
- * Validates: name, description, main_image, extra_images, price,
+ * Validates: food_category_id, name, description, main_image, extra_images, price, currency_code,
  * serving_size, weight, is_vegetarian, is_best_seller (all optional/sometimes)
  */
 class UpdateFoodItemRequest extends FormRequest
@@ -39,11 +39,14 @@ class UpdateFoodItemRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'food_category_id' => 'sometimes|exists:food_categories,id',
             'name' => 'sometimes|array',
+            'name.en' => 'sometimes|string|max:255',
             'description' => 'nullable|array',
             'main_image' => 'sometimes|string',
             'extra_images' => 'nullable|array|max:5',
             'price' => 'sometimes|numeric|min:0',
+            'currency_code' => 'sometimes|string|max:5',
             'serving_size' => 'nullable|integer',
             'weight' => 'nullable|integer',
             'is_vegetarian' => 'sometimes|boolean',
