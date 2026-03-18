@@ -20,14 +20,6 @@ interface RestaurantRepositoryInterface extends BaseRepositoryInterface
     public function getActivePaginated(array $filters): LengthAwarePaginator|Collection;
 
     /**
-     * Search active restaurants by name. Paginated unless per_page=all.
-     *
-     * @param array $filters
-     * @return LengthAwarePaginator|Collection
-     */
-    public function searchByName(array $filters): LengthAwarePaginator|Collection;
-
-    /**
      * Get active restaurants within radius of lat/long.
      *
      * @param float $latitude

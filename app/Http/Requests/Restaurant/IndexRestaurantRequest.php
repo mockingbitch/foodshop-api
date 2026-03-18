@@ -18,6 +18,11 @@ class IndexRestaurantRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        // Backward compatibility: some clients send `name` instead of `search` on /restaurants/search
+        if (($this->input('search') === null || $this->input('search') === '') && $this->filled('name')) {
+            $this->merge(['search' => $this->input('name')]);
+        }
+
         $merge = $this->normalizeBooleans(['delivery_available']);
         if ($merge !== []) {
             $this->merge($merge);
@@ -32,6 +37,8 @@ class IndexRestaurantRequest extends FormRequest
             'restaurant_type_id' => 'nullable|integer|min:1',
             'delivery_available' => 'nullable|boolean',
             'search' => 'nullable|string',
+            // accepted for backward compatibility (mapped into `search` in prepareForValidation)
+            'name' => 'nullable|string',
             'lat' => 'nullable|numeric',
             'lng' => 'nullable|numeric',
             'radius' => 'nullable|numeric|min:1|max:100',

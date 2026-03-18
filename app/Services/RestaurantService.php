@@ -34,17 +34,6 @@ class RestaurantService
     }
 
     /**
-     * Search restaurants by name (JSON name fields). Paginated unless per_page=all.
-     *
-     * @param array $filters name?, per_page? (int or 'all')
-     * @return LengthAwarePaginator|Collection
-     */
-    public function search(array $filters): LengthAwarePaginator|Collection
-    {
-        return $this->restaurantRepository->searchByName($filters);
-    }
-
-    /**
      * Get restaurants within radius (km) of latitude/longitude.
      *
      * @param float $latitude

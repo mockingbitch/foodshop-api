@@ -8,6 +8,7 @@ use App\Http\Requests\Restaurant\GetNearbyRestaurantRequest;
 use App\Http\Requests\Restaurant\StoreRestaurantRequest;
 use App\Http\Requests\Restaurant\UpdateRestaurantRequest;
 use App\Services\RestaurantService;
+use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
 /**
@@ -33,11 +34,11 @@ class RestaurantController extends BaseApiController
     }
 
     /**
-     * Search restaurants by name (paginated unless per_page=all)
+     * Search restaurants (same filters as index). Paginated unless per_page=all.
      */
-    public function search(\Illuminate\Http\Request $request): JsonResponse
+    public function search(IndexRestaurantRequest $request): JsonResponse
     {
-        $restaurants = $this->restaurantService->search($request->only(['name', 'per_page']));
+        $restaurants = $this->restaurantService->index($request->validated());
 
         return $this->successList($restaurants);
     }
