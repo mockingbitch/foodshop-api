@@ -7,7 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 /**
  * Form request for creating a new food item.
  *
- * Validates: restaurant_id, food_category_id, name (multilingual), description,
+ * Validates: restaurant_id, food_category_id, name (multilingual), description (WYSIWYG/CKEditor HTML),
  * main_image, extra_images, price, currency_code, serving_size, weight, is_vegetarian
  */
 class StoreFoodItemRequest extends FormRequest

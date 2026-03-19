@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Contracts\Repositories\CountryRepositoryInterface;
 use App\Contracts\Repositories\RestaurantRepositoryInterface;
+use App\Support\HtmlSanitizer;
 use App\Models\Restaurant;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -91,6 +92,7 @@ class RestaurantService
      */
     public function store(User $user, array $data): Restaurant
     {
+        $data = $this->sanitizeDescription($data);
         $code = $this->generateRestaurantCode($data['country_id']);
 
         $restaurant = $this->restaurantRepository->create(array_merge($data, [
@@ -122,6 +124,7 @@ class RestaurantService
             throw new AuthorizationException('Unauthorized');
         }
 
+        $data = $this->sanitizeDescription($data);
         $restaurant->update($data);
 
         Log::info('Restaurant updated', ['restaurant_id' => $id, 'user_id' => $user->id]);
@@ -191,6 +194,17 @@ class RestaurantService
             'restaurant' => $restaurant,
             'food_items' => $restaurant->foodItems()->paginate(20),
         ];
+    }
+
+    /**
+     * Sanitize description (CKEditor HTML) for WYSIWYG display.
+     */
+    protected function sanitizeDescription(array $data): array
+    {
+        if (isset($data['description']) && is_array($data['description'])) {
+            $data['description'] = HtmlSanitizer::sanitizeArray($data['description']);
+        }
+        return $data;
     }
 
     /**

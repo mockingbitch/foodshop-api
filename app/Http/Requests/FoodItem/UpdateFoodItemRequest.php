@@ -7,7 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 /**
  * Form request for updating an existing food item.
  *
- * Validates: food_category_id, name, description, main_image, extra_images, price, currency_code,
+ * Validates: food_category_id, name, description (WYSIWYG/CKEditor HTML), main_image, extra_images, price, currency_code,
  * serving_size, weight, is_vegetarian, is_best_seller (all optional/sometimes)
  */
 class UpdateFoodItemRequest extends FormRequest
