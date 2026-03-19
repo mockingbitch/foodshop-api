@@ -7,7 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 /**
  * Form request for creating a new restaurant.
  *
- * Validates: country_id, restaurant_type_id, name (multilingual), description,
+ * Validates: country_id, restaurant_type_id, name (multilingual), description (WYSIWYG/CKEditor HTML),
  * city, address, phone, zalo, email, latitude, longitude, main_image, outside/inside images,
  * youtube_link, facebook_link, webpage_link, delivery_available, remark
  */

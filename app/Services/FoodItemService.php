@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Contracts\Repositories\ExchangeRateRepositoryInterface;
 use App\Contracts\Repositories\FoodCategoryRepositoryInterface;
+use App\Support\HtmlSanitizer;
 use App\Contracts\Repositories\FoodItemRepositoryInterface;
 use App\Contracts\Repositories\RestaurantRepositoryInterface;
 use App\Models\FoodCategory;
@@ -123,6 +124,7 @@ class FoodItemService
      */
     public function store(User $user, array $data): FoodItem
     {
+        $data = $this->sanitizeDescription($data);
         $restaurant = $this->restaurantRepository->findOrFail($data['restaurant_id'])->load('country');
 
         if ($restaurant->user_id !== $user->id && !$user->isAdmin()) {
@@ -172,6 +174,7 @@ class FoodItemService
             $foodItem->price_usd = $this->convertToUSD($data['price'], $data['currency_code']);
         }
 
+        $data = $this->sanitizeDescription($data);
         $foodItem->update(array_diff_key($data, array_flip(['food_code', 'food_code_status'])));
 
         Log::info('Food item updated', ['food_item_id' => $id, 'user_id' => $user->id]);
@@ -252,6 +255,17 @@ class FoodItemService
     public function getRestaurantFoodItems(int $restaurantId, array $filters = []): LengthAwarePaginator
     {
         return $this->foodItemRepository->getByRestaurantId($restaurantId, $filters);
+    }
+
+    /**
+     * Sanitize description (CKEditor HTML) for WYSIWYG display.
+     */
+    protected function sanitizeDescription(array $data): array
+    {
+        if (isset($data['description']) && is_array($data['description'])) {
+            $data['description'] = HtmlSanitizer::sanitizeArray($data['description']);
+        }
+        return $data;
     }
 
     /**

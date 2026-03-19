@@ -3,8 +3,8 @@
 namespace App\Support;
 
 /**
- * Sanitize HTML for WYSIWYG display. Allows safe tags only to prevent XSS.
- * Use for news content and excerpt (multilingual HTML).
+ * Sanitize HTML for WYSIWYG display (CKEditor, etc.). Allows safe tags only to prevent XSS.
+ * Use for: news content/excerpt, restaurant description, food item description (multilingual HTML).
  */
 class HtmlSanitizer
 {
