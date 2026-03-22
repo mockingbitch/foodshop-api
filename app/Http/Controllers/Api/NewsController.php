@@ -41,13 +41,15 @@ class NewsController extends BaseApiController
     }
 
     /**
-     * Get news by type (news, course, chef)
+     * Get news by type (news, course, chef). Paginated unless per_page=all.
      */
-    public function getByType(string $type): JsonResponse
+    public function getByType(Request $request, string $type): JsonResponse
     {
-        $news = $this->newsService->getByType($type);
+        $news = $this->newsService->getByType($type, [
+            'per_page' => $request->input('per_page', 15),
+        ]);
 
-        return $this->success($news);
+        return $this->successList($news);
     }
 
     /**

@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Contracts\Repositories\FoodCategoryRepositoryInterface;
 use App\Models\FoodCategory;
 use App\Models\FoodCategoryTranslation;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 
 /**
@@ -19,12 +20,12 @@ class FoodCategoryRepository extends BaseRepository implements FoodCategoryRepos
     }
 
     /**
-     * Get active categories with optional root_only and parent_id filter, ordered by sort_order.
+     * Get active categories with optional filters. Paginated unless per_page=all.
      *
-     * @param array $filters root_only?, parent_id?
-     * @return Collection
+     * @param array $filters root_only?, parent_id?, per_page? (int or 'all')
+     * @return LengthAwarePaginator|Collection
      */
-    public function getActiveList(array $filters): Collection
+    public function getActiveList(array $filters): LengthAwarePaginator|Collection
     {
         $query = $this->query()
             ->with(['translations', 'parent', 'children'])
@@ -37,10 +38,15 @@ class FoodCategoryRepository extends BaseRepository implements FoodCategoryRepos
             $query->where('parent_id', $filters['parent_id']);
         }
 
-        return $query
-            ->orderBy('sort_order')
-            ->orderByDesc('id')
-            ->get();
+        $query->orderBy('sort_order')->orderByDesc('id');
+
+        if (isset($filters['per_page']) && (string) $filters['per_page'] === 'all') {
+            return $query->get();
+        }
+        $perPage = (int) ($filters['per_page'] ?? 15);
+        $perPage = min(max($perPage, 1), 100);
+
+        return $query->paginate($perPage);
     }
 
     /**

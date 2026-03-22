@@ -7,7 +7,8 @@ use Illuminate\Foundation\Http\FormRequest;
 /**
  * Form request for updating an existing food category.
  *
- * Validates: code (unique except current), parent_id, image_1-5, sort_order (all optional/sometimes)
+ * Validates: code, parent_id, image_1-5, sort_order, translations (optional)
+ * translations: array of { language_code, name, description?, video_link? } per item
  */
 class UpdateFoodCategoryRequest extends FormRequest
 {
@@ -36,7 +37,12 @@ class UpdateFoodCategoryRequest extends FormRequest
             'image_3' => 'nullable|string',
             'image_4' => 'nullable|string',
             'image_5' => 'nullable|string',
-            'sort_order' => 'integer',
+            'sort_order' => 'nullable|integer',
+            'translations' => 'nullable|array',
+            'translations.*.language_code' => 'required|string|max:5',
+            'translations.*.name' => 'required|string|max:200',
+            'translations.*.description' => 'nullable|string',
+            'translations.*.video_link' => 'nullable|string',
         ];
     }
 }

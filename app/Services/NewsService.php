@@ -41,14 +41,15 @@ class NewsService
     }
 
     /**
-     * Get published news by type (news, course, chef).
+     * Get published news by type (news, course, chef). Paginated unless per_page=all.
      *
      * @param string $type
-     * @return LengthAwarePaginator
+     * @param array $filters per_page? (int or 'all')
+     * @return LengthAwarePaginator|Collection
      */
-    public function getByType(string $type): LengthAwarePaginator
+    public function getByType(string $type, array $filters = []): LengthAwarePaginator|Collection
     {
-        return $this->newsRepository->getPublishedByType($type);
+        return $this->newsRepository->getPublishedByType($type, $filters);
     }
 
     /**

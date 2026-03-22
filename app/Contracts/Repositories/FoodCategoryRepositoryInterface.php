@@ -4,6 +4,7 @@ namespace App\Contracts\Repositories;
 
 use App\Models\FoodCategory;
 use App\Models\FoodCategoryTranslation;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 
 /**
@@ -12,12 +13,12 @@ use Illuminate\Database\Eloquent\Collection;
 interface FoodCategoryRepositoryInterface extends BaseRepositoryInterface
 {
     /**
-     * Get active categories with optional filters, ordered by sort_order.
+     * Get active categories with optional filters. Paginated unless per_page=all.
      *
-     * @param array $filters
-     * @return Collection
+     * @param array $filters root_only?, parent_id?, per_page? (int or 'all')
+     * @return LengthAwarePaginator|Collection
      */
-    public function getActiveList(array $filters): Collection;
+    public function getActiveList(array $filters): LengthAwarePaginator|Collection;
 
     /**
      * Find category by ID with relations.
