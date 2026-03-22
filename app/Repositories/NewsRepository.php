@@ -101,20 +101,28 @@ class NewsRepository extends BaseRepository implements NewsRepositoryInterface
     }
 
     /**
-     * Get published news by type (news, course, chef).
+     * Get published news by type (news, course, chef). Paginated unless per_page=all.
      *
      * @param string $type
-     * @return LengthAwarePaginator
+     * @param array $filters per_page? (int or 'all')
+     * @return LengthAwarePaginator|EloquentCollection
      */
-    public function getPublishedByType(string $type): LengthAwarePaginator
+    public function getPublishedByType(string $type, array $filters = []): LengthAwarePaginator|EloquentCollection
     {
-        return $this->query()
+        $query = $this->query()
             ->with(['category'])
             ->published()
             ->type($type)
             ->orderBy('published_at', 'desc')
-            ->orderBy('id', 'desc')
-            ->paginate(15);
+            ->orderBy('id', 'desc');
+
+        if (isset($filters['per_page']) && (string) $filters['per_page'] === 'all') {
+            return $query->get();
+        }
+        $perPage = (int) ($filters['per_page'] ?? 15);
+        $perPage = min(max($perPage, 1), 100);
+
+        return $query->paginate($perPage);
     }
 
     /**

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Contracts\Repositories\FoodCategoryRepositoryInterface;
 use App\Models\FoodCategory;
 use App\Models\FoodCategoryTranslation;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
@@ -20,12 +21,12 @@ class FoodCategoryService
     ) {}
 
     /**
-     * List active categories with optional root_only and parent_id filters.
+     * List active categories with optional filters. Paginated unless per_page=all.
      *
-     * @param array $filters root_only?, parent_id?
-     * @return Collection
+     * @param array $filters root_only?, parent_id?, per_page? (int or 'all')
+     * @return LengthAwarePaginator|Collection
      */
-    public function index(array $filters): Collection
+    public function index(array $filters): LengthAwarePaginator|Collection
     {
         return $this->foodCategoryRepository->getActiveList($filters);
     }
@@ -64,15 +65,26 @@ class FoodCategoryService
     }
 
     /**
-     * Update category (translations not updated here; use addTranslation).
+     * Update category and optionally translations.
      *
      * @param int $id
-     * @param array $data
+     * @param array $data code?, parent_id?, image_1-5?, sort_order?, translations? (array of { language_code, name, description?, video_link? })
      * @return FoodCategory
      */
     public function update(int $id, array $data): FoodCategory
     {
+        $translations = $data['translations'] ?? null;
+        unset($data['translations']);
+
         $category = $this->foodCategoryRepository->updateCategory($id, $data);
+
+        if (! empty($translations)) {
+            foreach ($translations as $t) {
+                $this->foodCategoryRepository->updateOrCreateTranslation($id, $t);
+            }
+            $category->load('translations');
+        }
+
         Log::info('Food category updated', ['category_id' => $id]);
         return $category;
     }

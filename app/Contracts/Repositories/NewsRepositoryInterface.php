@@ -27,12 +27,13 @@ interface NewsRepositoryInterface extends BaseRepositoryInterface
     public function getPaginatedForAdmin(array $filters): LengthAwarePaginator|\Illuminate\Database\Eloquent\Collection;
 
     /**
-     * Get published news by type.
+     * Get published news by type. Paginated unless per_page=all.
      *
      * @param string $type
-     * @return LengthAwarePaginator
+     * @param array $filters per_page? (int or 'all')
+     * @return LengthAwarePaginator|\Illuminate\Database\Eloquent\Collection
      */
-    public function getPublishedByType(string $type): LengthAwarePaginator;
+    public function getPublishedByType(string $type, array $filters = []): LengthAwarePaginator|\Illuminate\Database\Eloquent\Collection;
 
     /**
      * Find news by ID with category relation.

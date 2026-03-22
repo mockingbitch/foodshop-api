@@ -23,16 +23,17 @@ class FoodCategoryController extends BaseApiController
     ) {}
 
     /**
-     * Get list of food categories (filters: root_only, parent_id)
+     * Get list of food categories (filters: root_only, parent_id, per_page). Paginated unless per_page=all.
      */
     public function index(Request $request): JsonResponse
     {
         $categories = $this->foodCategoryService->index([
             'root_only' => $request->boolean('root_only'),
             'parent_id' => $request->parent_id,
+            'per_page' => $request->input('per_page', 15),
         ]);
 
-        return $this->success($categories);
+        return $this->successList($categories);
     }
 
     /**

@@ -155,7 +155,7 @@ Trả về danh sách nhà hàng của owner đang đăng nhập. **Luôn lấy 
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| GET | `/api/food-categories` | No | List active. Query: `root_only`, `parent_id` |
+| GET | `/api/food-categories` | No | List active (paginated). Query: `root_only`, `parent_id`, `per_page` (default 15, use `all` to disable pagination) |
 | GET | `/api/food-categories/{id}` | No | Category with translation & images. Query: `language_code` |
 | POST | `/api/food-categories` | Admin | Create with translations |
 | PUT | `/api/food-categories/{id}` | Admin | Update |
@@ -173,7 +173,7 @@ Trả về danh sách nhà hàng của owner đang đăng nhập. **Luôn lấy 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
 | GET | `/api/news` | No | Published list. Query: `type`, `search`, `per_page` |
-| GET | `/api/news/by-type/{type}` | No | Published by type (news, course, chef) |
+| GET | `/api/news/by-type/{type}` | No | Published by type (paginated). Query: `per_page` (default 15, use `all` to disable pagination) |
 | GET | `/api/news/{id}` | No | Detail (increments view_count) |
 | POST | `/api/news` | Admin | Create. Body: type, title, **content** (HTML), excerpt (HTML), status, etc. |
 | PUT | `/api/news/{id}` | Admin | Update |
