@@ -5,7 +5,6 @@ namespace App\Repositories;
 use App\Contracts\Repositories\NewsRepositoryInterface;
 use App\Models\News;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -23,9 +22,9 @@ class NewsRepository extends BaseRepository implements NewsRepositoryInterface
      * List of published news with optional type and search. Paginated unless per_page=all.
      *
      * @param array $filters type?, search?, per_page? (int or 'all')
-     * @return LengthAwarePaginator|EloquentCollection
+     * @return LengthAwarePaginator|\Illuminate\Database\Eloquent\Collection
      */
-    public function getPublishedPaginated(array $filters): LengthAwarePaginator|EloquentCollection
+    public function getPublishedPaginated(array $filters): LengthAwarePaginator|\Illuminate\Database\Eloquent\Collection
     {
         $query = $this->query()->with(['category'])->published();
 
@@ -61,9 +60,9 @@ class NewsRepository extends BaseRepository implements NewsRepositoryInterface
      * List for admin (all statuses). Optional filters: type, search, status, per_page. Paginated unless per_page=all.
      *
      * @param array $filters type?, search?, status?, per_page? (int or 'all')
-     * @return LengthAwarePaginator|EloquentCollection
+     * @return LengthAwarePaginator|\Illuminate\Database\Eloquent\Collection
      */
-    public function getPaginatedForAdmin(array $filters): LengthAwarePaginator|EloquentCollection
+    public function getPaginatedForAdmin(array $filters): LengthAwarePaginator|\Illuminate\Database\Eloquent\Collection
     {
         $query = $this->query()->with(['category']);
 
@@ -105,9 +104,9 @@ class NewsRepository extends BaseRepository implements NewsRepositoryInterface
      *
      * @param string $type
      * @param array $filters per_page? (int or 'all')
-     * @return LengthAwarePaginator|EloquentCollection
+     * @return LengthAwarePaginator|\Illuminate\Database\Eloquent\Collection
      */
-    public function getPublishedByType(string $type, array $filters = []): LengthAwarePaginator|EloquentCollection
+    public function getPublishedByType(string $type, array $filters = []): LengthAwarePaginator|\Illuminate\Database\Eloquent\Collection
     {
         $query = $this->query()
             ->with(['category'])
