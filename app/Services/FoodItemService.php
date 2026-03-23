@@ -258,6 +258,26 @@ class FoodItemService
     }
 
     /**
+     * Owner: get food items for a restaurant (includes hidden/disable).
+     *
+     * @param User $user
+     * @param int $restaurantId
+     * @param array $filters status? , per_page?
+     * @return LengthAwarePaginator
+     * @throws AuthorizationException
+     */
+    public function getRestaurantFoodItemsForOwner(User $user, int $restaurantId, array $filters = []): LengthAwarePaginator
+    {
+        $restaurant = $this->restaurantRepository->findOrFail($restaurantId);
+
+        if ($restaurant->user_id !== $user->id && ! $user->isAdmin()) {
+            throw new AuthorizationException('Unauthorized');
+        }
+
+        return $this->foodItemRepository->getByRestaurantId($restaurantId, $filters);
+    }
+
+    /**
      * Sanitize description (CKEditor HTML) for WYSIWYG display.
      */
     protected function sanitizeDescription(array $data): array

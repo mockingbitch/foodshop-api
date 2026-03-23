@@ -122,4 +122,23 @@ class FoodItemController extends BaseApiController
 
         return $this->success($foodItems);
     }
+
+    /**
+     * Owner: get food items for a restaurant (includes hidden/disable).
+     *
+     * Query: status? (active|hidden|pending), per_page? (1-100)
+     */
+    public function ownerGetRestaurantFoodItems(int $restaurantId, Request $request): JsonResponse
+    {
+        $foodItems = $this->foodItemService->getRestaurantFoodItemsForOwner(
+            $request->user(),
+            $restaurantId,
+            [
+                'status' => $request->input('status'),
+                'per_page' => (int) $request->input('per_page', 15),
+            ]
+        );
+
+        return $this->successList($foodItems);
+    }
 }
