@@ -56,6 +56,7 @@ Route::prefix('auth')->group(function () {
 Route::middleware('auth:api')->prefix('owner')->group(function () {
     Route::put('/profile', [AuthController::class, 'updateOwnerProfile']);
     Route::get('/restaurants', [RestaurantController::class, 'ownerRestaurants']);
+    Route::get('/restaurants/{restaurantId}/food-items', [FoodItemController::class, 'ownerGetRestaurantFoodItems']);
 });
 
 // ============================================================

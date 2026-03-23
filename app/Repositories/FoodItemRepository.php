@@ -177,7 +177,10 @@ class FoodItemRepository extends BaseRepository implements FoodItemRepositoryInt
         }
 
         $query->orderByDesc('id');
-        return $query->paginate(20);
+        $perPage = isset($filters['per_page']) ? (int) $filters['per_page'] : 15;
+        $perPage = min(max($perPage, 1), 100);
+
+        return $query->paginate($perPage);
     }
 
     /**
