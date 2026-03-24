@@ -155,7 +155,7 @@ class RestaurantService
     /**
      * Admin: list of all restaurants with optional status filter. Paginated unless per_page=all.
      *
-     * @param array $filters status?, per_page? (int or 'all')
+     * @param array $filters status?, search?, per_page? (int or 'all')
      * @return LengthAwarePaginator|Collection
      */
     public function adminIndex(array $filters): LengthAwarePaginator|Collection

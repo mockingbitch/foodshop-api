@@ -107,7 +107,7 @@ class RestaurantRepository extends BaseRepository implements RestaurantRepositor
     /**
      * Get all restaurants (admin) with optional status filter. Paginated unless per_page=all.
      *
-     * @param  array  $filters  status?, per_page? (int or 'all')
+     * @param  array  $filters  status?, search? (name/city/food item, same as public list), per_page? (int or 'all')
      */
     public function getAllPaginated(array $filters): LengthAwarePaginator|EloquentCollection
     {
@@ -115,6 +115,14 @@ class RestaurantRepository extends BaseRepository implements RestaurantRepositor
 
         if (! empty($filters['status'])) {
             $query->where('status', $filters['status']);
+        }
+
+        if (! empty($filters['search'])) {
+            $pattern = $this->likePatternCaseInsensitive($filters['search']);
+            $query->where(function ($q) use ($pattern) {
+                $this->addSearchRestaurantNameCity($q, $pattern);
+                $this->addSearchByFoodItemName($q, $pattern);
+            });
         }
 
         $query->orderByDesc('id');

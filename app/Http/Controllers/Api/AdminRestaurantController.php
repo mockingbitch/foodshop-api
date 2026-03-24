@@ -20,11 +20,11 @@ class AdminRestaurantController extends BaseApiController
     ) {}
 
     /**
-     * Get list of all restaurants (Admin). Filters: status, per_page (or per_page=all to disable pagination)
+     * Get list of all restaurants (Admin). Filters: status, search (name/city/food item), per_page (or per_page=all to disable pagination)
      */
     public function index(Request $request): JsonResponse
     {
-        $restaurants = $this->restaurantService->adminIndex($request->only(['status', 'per_page']));
+        $restaurants = $this->restaurantService->adminIndex($request->only(['status', 'per_page', 'search']));
 
         return $this->successList($restaurants);
     }

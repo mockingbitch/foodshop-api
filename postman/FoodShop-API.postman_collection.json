@@ -883,8 +883,8 @@
               "request": {
                 "method": "GET",
                 "header": [{ "key": "Accept", "value": "application/json" }],
-                "url": "{{base_url}}/api/admin/restaurants?status=&per_page=15",
-                "description": "Danh sách nhà hàng (Admin). status: active | hidden | pending. per_page: 1-100 hoặc all."
+                "url": "{{base_url}}/api/admin/restaurants?status=&search=&per_page=15",
+                "description": "Danh sách nhà hàng (Admin). status: active | hidden | pending. search: tên/city/món (giống list public). per_page: 1-100 hoặc all."
               }
             },
             {

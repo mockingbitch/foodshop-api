@@ -223,7 +223,7 @@ All admin routes require **auth (admin)**.
 | Method | Path | Description |
 |--------|------|-------------|
 | GET | `/api/admin/dashboard/stats` | Dashboard counts (restaurants, food_items, news, users, reviews) |
-| GET | `/api/admin/restaurants` | All restaurants. Query: `status`, `per_page` |
+| GET | `/api/admin/restaurants` | All restaurants. Query: `status`, `search` (name/city/food item), `per_page` |
 | GET | `/api/admin/restaurants/{restaurantId}/food-items` | Restaurant’s food items (paginated) |
 | PUT | `/api/admin/restaurants/{id}/status` | Update status (active, hidden, pending) |
 | GET | `/api/food-items/pending-codes` | Food items with pending code confirmation |
