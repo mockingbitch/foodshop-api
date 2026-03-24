@@ -16,7 +16,7 @@ return new class extends Migration
             $table->enum('food_code_status', ['pending', 'confirmed', 'rejected'])->default('pending');
             
             // Multilingual fields
-            $table->json('name'); // {"en": "Food Name", "vn": "Tên món ăn", "kr": "음식 이름"}
+            $table->json('name'); // {"en", "vi", "ko"} (legacy vn/kr still readable in search)
             $table->json('description')->nullable();
             
             // Images
