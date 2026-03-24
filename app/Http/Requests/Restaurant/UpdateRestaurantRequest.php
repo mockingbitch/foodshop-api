@@ -7,10 +7,10 @@ use Illuminate\Foundation\Http\FormRequest;
 /**
  * Form request for updating an existing restaurant.
  *
- * Validates: name, description (WYSIWYG/CKEditor HTML), city, address, phone, zalo, email,
- * latitude, longitude,
- * main_image, outside/inside images, youtube_link, facebook_link, webpage_link,
- * delivery_available, remark (all optional/sometimes)
+ * Same fields as StoreRestaurantRequest; each key optional for PATCH-style updates (sometimes/nullable).
+ * Validates: country_id, restaurant_type_id, name (en required with name; vi, ko optional), description (WYSIWYG/CKEditor HTML),
+ * city, address, phone, zalo, email, latitude, longitude, main_image, outside/inside images,
+ * youtube_link, facebook_link, webpage_link, delivery_available, remark.
  */
 class UpdateRestaurantRequest extends FormRequest
 {
@@ -41,7 +41,12 @@ class UpdateRestaurantRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'country_id' => 'sometimes|exists:countries,id',
+            'restaurant_type_id' => 'sometimes|exists:restaurant_types,id',
             'name' => 'sometimes|array',
+            'name.en' => 'required_with:name|string|max:255',
+            'name.vi' => 'nullable|string|max:255',
+            'name.ko' => 'nullable|string|max:255',
             'description' => 'nullable|array',
             'city' => 'sometimes|string|max:100',
             'address' => 'sometimes|string',
@@ -81,6 +86,7 @@ class UpdateRestaurantRequest extends FormRequest
                 $merge[$key] = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? $value;
             }
         }
+
         return $merge;
     }
 }

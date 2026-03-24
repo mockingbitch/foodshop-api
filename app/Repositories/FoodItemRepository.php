@@ -22,8 +22,7 @@ class FoodItemRepository extends BaseRepository implements FoodItemRepositoryInt
     /**
      * List of active food items with confirmed code and filters. Paginated unless per_page=all.
      *
-     * @param array $filters restaurant_id?, category_id?, best_seller?, vegetarian?, search?, per_page? (int or 'all')
-     * @return LengthAwarePaginator|EloquentCollection
+     * @param  array  $filters  restaurant_id?, category_id?, best_seller?, vegetarian?, search?, per_page? (int or 'all')
      */
     public function getActiveConfirmedPaginated(array $filters): LengthAwarePaginator|EloquentCollection
     {
@@ -32,29 +31,33 @@ class FoodItemRepository extends BaseRepository implements FoodItemRepositoryInt
             ->active()
             ->confirmedCode();
 
-        if (!empty($filters['restaurant_id'])) {
+        if (! empty($filters['restaurant_id'])) {
             $query->where('restaurant_id', $filters['restaurant_id']);
         }
-        if (!empty($filters['category_id'])) {
+        if (! empty($filters['category_id'])) {
             $query->where('food_category_id', $filters['category_id']);
         }
-        if (!empty($filters['best_seller'])) {
+        if (! empty($filters['best_seller'])) {
             $query->bestSeller();
         }
-        if (!empty($filters['vegetarian'])) {
+        if (! empty($filters['vegetarian'])) {
             $query->vegetarian();
         }
         if (! empty($filters['search'])) {
-            $pattern = '%' . mb_strtolower(trim($filters['search']), 'UTF-8') . '%';
+            $pattern = '%'.mb_strtolower(trim($filters['search']), 'UTF-8').'%';
             $query->where(function ($q) use ($pattern) {
                 $driver = DB::getDriverName();
                 if ($driver === 'pgsql') {
                     $q->whereRaw('LOWER(COALESCE(name->>\'en\', \'\')) LIKE ?', [$pattern])
+                        ->orWhereRaw('LOWER(COALESCE(name->>\'vi\', \'\')) LIKE ?', [$pattern])
+                        ->orWhereRaw('LOWER(COALESCE(name->>\'ko\', \'\')) LIKE ?', [$pattern])
                         ->orWhereRaw('LOWER(COALESCE(name->>\'vn\', \'\')) LIKE ?', [$pattern])
                         ->orWhereRaw('LOWER(COALESCE(name->>\'kr\', \'\')) LIKE ?', [$pattern])
                         ->orWhereRaw('LOWER(COALESCE(food_code, \'\')) LIKE ?', [$pattern]);
                 } else {
                     $q->whereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, "$.en"))) LIKE ?', [$pattern])
+                        ->orWhereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, "$.vi"))) LIKE ?', [$pattern])
+                        ->orWhereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, "$.ko"))) LIKE ?', [$pattern])
                         ->orWhereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, "$.vn"))) LIKE ?', [$pattern])
                         ->orWhereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, "$.kr"))) LIKE ?', [$pattern])
                         ->orWhereRaw('LOWER(COALESCE(food_code, "")) LIKE ?', [$pattern]);
@@ -66,14 +69,12 @@ class FoodItemRepository extends BaseRepository implements FoodItemRepositoryInt
         if (isset($filters['per_page']) && (string) $filters['per_page'] === 'all') {
             return $query->get();
         }
+
         return $query->paginate((int) ($filters['per_page'] ?? 15));
     }
 
     /**
      * Get active confirmed food items by category ID (paginated).
-     *
-     * @param int $categoryId
-     * @return LengthAwarePaginator
      */
     public function getByCategory(int $categoryId): LengthAwarePaginator
     {
@@ -89,8 +90,7 @@ class FoodItemRepository extends BaseRepository implements FoodItemRepositoryInt
     /**
      * Get best seller food items with optional restaurant filter. Paginated unless per_page=all.
      *
-     * @param array $filters restaurant_id?, per_page? (int or 'all')
-     * @return LengthAwarePaginator|EloquentCollection
+     * @param  array  $filters  restaurant_id?, per_page? (int or 'all')
      */
     public function getBestSellerPaginated(array $filters): LengthAwarePaginator|EloquentCollection
     {
@@ -100,7 +100,7 @@ class FoodItemRepository extends BaseRepository implements FoodItemRepositoryInt
             ->confirmedCode()
             ->bestSeller();
 
-        if (!empty($filters['restaurant_id'])) {
+        if (! empty($filters['restaurant_id'])) {
             $query->where('restaurant_id', $filters['restaurant_id']);
         }
         $query->orderByDesc('id');
@@ -108,14 +108,12 @@ class FoodItemRepository extends BaseRepository implements FoodItemRepositoryInt
         if (isset($filters['per_page']) && (string) $filters['per_page'] === 'all') {
             return $query->get();
         }
+
         return $query->paginate((int) ($filters['per_page'] ?? 15));
     }
 
     /**
      * Find food item by ID with relations (restaurant, foodCategory, reviews).
-     *
-     * @param int $id
-     * @return FoodItem
      */
     public function findWithRelations(int $id): FoodItem
     {
@@ -127,8 +125,6 @@ class FoodItemRepository extends BaseRepository implements FoodItemRepositoryInt
     /**
      * Get related food items (same category, excluding id, limit 6).
      *
-     * @param int $foodCategoryId
-     * @param int $excludeId
      * @return Collection
      */
     public function getRelatedByCategory(int $foodCategoryId, int $excludeId): EloquentCollection
@@ -146,9 +142,6 @@ class FoodItemRepository extends BaseRepository implements FoodItemRepositoryInt
 
     /**
      * Get food items with pending code confirmation (admin).
-     *
-     * @param int $perPage
-     * @return LengthAwarePaginator
      */
     public function getPendingCodeConfirmation(int $perPage = 20): LengthAwarePaginator
     {
@@ -162,9 +155,7 @@ class FoodItemRepository extends BaseRepository implements FoodItemRepositoryInt
     /**
      * Get food items by restaurant ID with optional status filter (admin).
      *
-     * @param int $restaurantId
-     * @param array $filters status?
-     * @return LengthAwarePaginator
+     * @param  array  $filters  status?
      */
     public function getByRestaurantId(int $restaurantId, array $filters = []): LengthAwarePaginator
     {
@@ -172,7 +163,7 @@ class FoodItemRepository extends BaseRepository implements FoodItemRepositoryInt
             ->with(['foodCategory.translations'])
             ->where('restaurant_id', $restaurantId);
 
-        if (!empty($filters['status'])) {
+        if (! empty($filters['status'])) {
             $query->where('status', $filters['status']);
         }
 
@@ -185,9 +176,6 @@ class FoodItemRepository extends BaseRepository implements FoodItemRepositoryInt
 
     /**
      * Get last food item by code prefix for generating next code (e.g. VN-R001-0001-).
-     *
-     * @param string $codePrefix
-     * @return FoodItem|null
      */
     public function getLastByCodePrefix(string $codePrefix): ?FoodItem
     {

@@ -4,12 +4,12 @@ namespace App\Services;
 
 use App\Contracts\Repositories\ExchangeRateRepositoryInterface;
 use App\Contracts\Repositories\FoodCategoryRepositoryInterface;
-use App\Support\HtmlSanitizer;
 use App\Contracts\Repositories\FoodItemRepositoryInterface;
 use App\Contracts\Repositories\RestaurantRepositoryInterface;
 use App\Models\FoodCategory;
 use App\Models\FoodItem;
 use App\Models\User;
+use App\Support\HtmlSanitizer;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
@@ -32,14 +32,14 @@ class FoodItemService
      * List of active food items with confirmed code and optional filters. Paginated unless per_page=all.
      * When group_by=category, returns all items grouped by category (per_page ignored).
      *
-     * @param array $filters restaurant_id?, category_id?, best_seller?, vegetarian?, search?, per_page?, group_by? ('category')
-     * @return LengthAwarePaginator|Collection|array
+     * @param  array  $filters  restaurant_id?, category_id?, best_seller?, vegetarian?, search?, per_page?, group_by? ('category')
      */
     public function index(array $filters): LengthAwarePaginator|Collection|array
     {
         if (! empty($filters['group_by']) && $filters['group_by'] === 'category') {
             return $this->indexGroupedByCategory($filters);
         }
+
         return $this->foodItemRepository->getActiveConfirmedPaginated($filters);
     }
 
@@ -72,9 +72,6 @@ class FoodItemService
 
     /**
      * Get food items by category ID.
-     *
-     * @param int $categoryId
-     * @return LengthAwarePaginator
      */
     public function getByCategory(int $categoryId): LengthAwarePaginator
     {
@@ -84,8 +81,7 @@ class FoodItemService
     /**
      * Get best seller food items with optional restaurant filter. Paginated unless per_page=all.
      *
-     * @param array $filters restaurant_id?, per_page? (int or 'all')
-     * @return LengthAwarePaginator|Collection
+     * @param  array  $filters  restaurant_id?, per_page? (int or 'all')
      */
     public function getBestSeller(array $filters): LengthAwarePaginator|Collection
     {
@@ -95,7 +91,6 @@ class FoodItemService
     /**
      * Get food item detail with related products and extra images.
      *
-     * @param int $id
      * @return array{food_item: FoodItem, extra_images: array, related_products: Collection}
      */
     public function show(int $id): array
@@ -117,17 +112,20 @@ class FoodItemService
     /**
      * Create food item (owner). Checks ownership; generates food code; converts price to USD. Status pending.
      *
-     * @param User $user
-     * @param array $data Validated store data
-     * @return FoodItem
+     * @param  array  $data  Validated store data
+     *
      * @throws AuthorizationException
      */
     public function store(User $user, array $data): FoodItem
     {
+        if (isset($data['name']) && is_array($data['name'])) {
+            $data['name'] = $this->normalizeFoodItemNameKeys($data['name']);
+        }
+
         $data = $this->sanitizeDescription($data);
         $restaurant = $this->restaurantRepository->findOrFail($data['restaurant_id'])->load('country');
 
-        if ($restaurant->user_id !== $user->id && !$user->isAdmin()) {
+        if ($restaurant->user_id !== $user->id && ! $user->isAdmin()) {
             Log::warning('Food item create unauthorized', ['restaurant_id' => $data['restaurant_id'], 'user_id' => $user->id]);
             throw new AuthorizationException('Unauthorized');
         }
@@ -155,19 +153,41 @@ class FoodItemService
     /**
      * Update food item. Throws AuthorizationException if user is not owner or admin. Recalculates price_usd if price/currency sent.
      *
-     * @param User $user
-     * @param int $id
-     * @param array $data
-     * @return FoodItem
      * @throws AuthorizationException
      */
     public function update(User $user, int $id, array $data): FoodItem
     {
         $foodItem = $this->foodItemRepository->findWithRelations($id);
 
-        if ($foodItem->restaurant->user_id !== $user->id && !$user->isAdmin()) {
+        if ($foodItem->restaurant->user_id !== $user->id && ! $user->isAdmin()) {
             Log::warning('Food item update unauthorized', ['food_item_id' => $id, 'user_id' => $user->id]);
             throw new AuthorizationException('Unauthorized');
+        }
+
+        if (array_key_exists('name', $data) && is_array($data['name'])) {
+            $existing = is_array($foodItem->name) ? $foodItem->name : [];
+            $incoming = $this->normalizeFoodItemNameKeys($data['name']);
+            $data['name'] = array_merge($existing, $incoming);
+        }
+
+        $regeneratedFoodCode = null;
+        if (array_key_exists('restaurant_id', $data)
+            && (int) $data['restaurant_id'] !== (int) $foodItem->restaurant_id) {
+            $targetRestaurant = $this->restaurantRepository->findWithRelations((int) $data['restaurant_id']);
+            if ($targetRestaurant->user_id !== $user->id && ! $user->isAdmin()) {
+                Log::warning('Food item update: unauthorized restaurant_id', [
+                    'food_item_id' => $id,
+                    'user_id' => $user->id,
+                    'restaurant_id' => $data['restaurant_id'],
+                ]);
+                throw new AuthorizationException('Unauthorized');
+            }
+            $categoryId = (int) ($data['food_category_id'] ?? $foodItem->food_category_id);
+            $regeneratedFoodCode = $this->generateFoodCode(
+                $targetRestaurant->country->code,
+                $targetRestaurant->code,
+                $categoryId
+            );
         }
 
         if (isset($data['price'], $data['currency_code'])) {
@@ -175,7 +195,15 @@ class FoodItemService
         }
 
         $data = $this->sanitizeDescription($data);
-        $foodItem->update(array_diff_key($data, array_flip(['food_code', 'food_code_status'])));
+
+        $payload = array_diff_key($data, array_flip(['food_code', 'food_code_status']));
+
+        if ($regeneratedFoodCode !== null) {
+            $payload['food_code'] = $regeneratedFoodCode;
+            $payload['food_code_status'] = 'confirmed';
+        }
+
+        $foodItem->update($payload);
 
         Log::info('Food item updated', ['food_item_id' => $id, 'user_id' => $user->id]);
 
@@ -185,15 +213,13 @@ class FoodItemService
     /**
      * Delete food item. Throws AuthorizationException if user is not owner or admin.
      *
-     * @param User $user
-     * @param int $id
      * @throws AuthorizationException
      */
     public function destroy(User $user, int $id): void
     {
         $foodItem = $this->foodItemRepository->findWithRelations($id);
 
-        if ($foodItem->restaurant->user_id !== $user->id && !$user->isAdmin()) {
+        if ($foodItem->restaurant->user_id !== $user->id && ! $user->isAdmin()) {
             Log::warning('Food item delete unauthorized', ['food_item_id' => $id, 'user_id' => $user->id]);
             throw new AuthorizationException('Unauthorized');
         }
@@ -204,9 +230,6 @@ class FoodItemService
 
     /**
      * Confirm food code and set status active (admin).
-     *
-     * @param int $id
-     * @return FoodItem
      */
     public function confirmFoodCode(int $id): FoodItem
     {
@@ -220,8 +243,6 @@ class FoodItemService
 
     /**
      * Get food items with pending code confirmation (admin).
-     *
-     * @return LengthAwarePaginator
      */
     public function getPendingFoodCodes(): LengthAwarePaginator
     {
@@ -230,10 +251,6 @@ class FoodItemService
 
     /**
      * Admin: update food item status (active, hidden, pending).
-     *
-     * @param int $id
-     * @param string $status
-     * @return FoodItem
      */
     public function updateStatus(int $id, string $status): FoodItem
     {
@@ -248,9 +265,7 @@ class FoodItemService
     /**
      * Admin: paginated food items for a restaurant with optional status filter.
      *
-     * @param int $restaurantId
-     * @param array $filters status?
-     * @return LengthAwarePaginator
+     * @param  array  $filters  status?
      */
     public function getRestaurantFoodItems(int $restaurantId, array $filters = []): LengthAwarePaginator
     {
@@ -260,10 +275,8 @@ class FoodItemService
     /**
      * Owner: get food items for a restaurant (includes hidden/disable).
      *
-     * @param User $user
-     * @param int $restaurantId
-     * @param array $filters status? , per_page?
-     * @return LengthAwarePaginator
+     * @param  array  $filters  status? , per_page?
+     *
      * @throws AuthorizationException
      */
     public function getRestaurantFoodItemsForOwner(User $user, int $restaurantId, array $filters = []): LengthAwarePaginator
@@ -278,6 +291,24 @@ class FoodItemService
     }
 
     /**
+     * Map legacy JSON keys vn/kr to vi/ko so stored name uses en, vi, ko consistently.
+     *
+     * @param  array<string, string|null>  $name
+     * @return array<string, string|null>
+     */
+    protected function normalizeFoodItemNameKeys(array $name): array
+    {
+        if (isset($name['vn']) && ! isset($name['vi'])) {
+            $name['vi'] = $name['vn'];
+        }
+        if (isset($name['kr']) && ! isset($name['ko'])) {
+            $name['ko'] = $name['kr'];
+        }
+
+        return $name;
+    }
+
+    /**
      * Sanitize description (CKEditor HTML) for WYSIWYG display.
      */
     protected function sanitizeDescription(array $data): array
@@ -285,6 +316,7 @@ class FoodItemService
         if (isset($data['description']) && is_array($data['description'])) {
             $data['description'] = HtmlSanitizer::sanitizeArray($data['description']);
         }
+
         return $data;
     }
 

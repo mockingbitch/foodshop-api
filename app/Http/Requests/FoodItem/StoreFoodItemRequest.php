@@ -7,7 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 /**
  * Form request for creating a new food item.
  *
- * Validates: restaurant_id, food_category_id, name (multilingual), description (WYSIWYG/CKEditor HTML),
+ * Validates: restaurant_id, food_category_id, name (en required; vi, ko optional), description (WYSIWYG/CKEditor HTML),
  * main_image, extra_images, price, currency_code, serving_size, weight, is_vegetarian
  */
 class StoreFoodItemRequest extends FormRequest
@@ -43,6 +43,8 @@ class StoreFoodItemRequest extends FormRequest
             'food_category_id' => 'required|exists:food_categories,id',
             'name' => 'required|array',
             'name.en' => 'required|string|max:255',
+            'name.vi' => 'nullable|string|max:255',
+            'name.ko' => 'nullable|string|max:255',
             'description' => 'nullable|array',
             'main_image' => 'required|string',
             'extra_images' => 'nullable|array|max:5',
@@ -69,6 +71,7 @@ class StoreFoodItemRequest extends FormRequest
                 $merge[$key] = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? $value;
             }
         }
+
         return $merge;
     }
 }

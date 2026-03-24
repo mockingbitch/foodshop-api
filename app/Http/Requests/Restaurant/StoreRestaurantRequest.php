@@ -7,7 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 /**
  * Form request for creating a new restaurant.
  *
- * Validates: country_id, restaurant_type_id, name (multilingual), description (WYSIWYG/CKEditor HTML),
+ * Validates: country_id, restaurant_type_id, name (en required; vi, ko optional), description (WYSIWYG/CKEditor HTML),
  * city, address, phone, zalo, email, latitude, longitude, main_image, outside/inside images,
  * youtube_link, facebook_link, webpage_link, delivery_available, remark
  */
@@ -44,6 +44,8 @@ class StoreRestaurantRequest extends FormRequest
             'restaurant_type_id' => 'required|exists:restaurant_types,id',
             'name' => 'required|array',
             'name.en' => 'required|string|max:255',
+            'name.vi' => 'nullable|string|max:255',
+            'name.ko' => 'nullable|string|max:255',
             'description' => 'nullable|array',
             'city' => 'required|string|max:100',
             'address' => 'required|string',
@@ -83,6 +85,7 @@ class StoreRestaurantRequest extends FormRequest
                 $merge[$key] = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? $value;
             }
         }
+
         return $merge;
     }
 }

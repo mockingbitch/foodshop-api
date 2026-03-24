@@ -7,8 +7,9 @@ use Illuminate\Foundation\Http\FormRequest;
 /**
  * Form request for updating an existing food item.
  *
- * Validates: food_category_id, name, description (WYSIWYG/CKEditor HTML), main_image, extra_images, price, currency_code,
- * serving_size, weight, is_vegetarian, is_best_seller (all optional/sometimes)
+ * Same fields as StoreFoodItemRequest (optional for PATCH) plus is_best_seller.
+ * Validates: restaurant_id, food_category_id, name (en required with name; vi, ko optional), description,
+ * main_image, extra_images, price, currency_code, serving_size, weight, is_vegetarian, is_best_seller.
  */
 class UpdateFoodItemRequest extends FormRequest
 {
@@ -39,9 +40,12 @@ class UpdateFoodItemRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'restaurant_id' => 'sometimes|exists:restaurants,id',
             'food_category_id' => 'sometimes|exists:food_categories,id',
             'name' => 'sometimes|array',
-            'name.en' => 'sometimes|string|max:255',
+            'name.en' => 'required_with:name|string|max:255',
+            'name.vi' => 'nullable|string|max:255',
+            'name.ko' => 'nullable|string|max:255',
             'description' => 'nullable|array',
             'main_image' => 'sometimes|string',
             'extra_images' => 'nullable|array|max:5',
@@ -69,6 +73,7 @@ class UpdateFoodItemRequest extends FormRequest
                 $merge[$key] = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? $value;
             }
         }
+
         return $merge;
     }
 }

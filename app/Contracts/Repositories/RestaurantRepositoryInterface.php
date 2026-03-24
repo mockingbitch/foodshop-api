@@ -38,7 +38,7 @@ interface RestaurantRepositoryInterface extends BaseRepositoryInterface
     public function findWithRelations(int $id): Restaurant;
 
     /**
-     * Get all restaurants (admin) with optional status filter. Paginated unless per_page=all.
+     * Get all restaurants (admin) with optional status filter. Optional search (name/city/food item). Paginated unless per_page=all.
      *
      * @param array $filters
      * @return LengthAwarePaginator|Collection

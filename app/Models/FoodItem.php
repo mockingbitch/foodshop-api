@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int $food_category_id
  * @property string|null $food_code
  * @property string $food_code_status pending|confirmed
- * @property array $name Multilingual
+ * @property array $name Multilingual keys: en, vi, ko (legacy vn/kr may exist in old rows)
  * @property array|null $description
  * @property string $main_image
  * @property array|null $extra_images

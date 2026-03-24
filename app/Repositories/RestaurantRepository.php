@@ -7,7 +7,6 @@ use App\Models\Restaurant;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 /**
  * Restaurant repository: Eloquent query layer for Restaurant model.
@@ -24,8 +23,7 @@ class RestaurantRepository extends BaseRepository implements RestaurantRepositor
      * List of active restaurants with filters. Paginated unless per_page=all.
      * Optional nearby: pass lat + lng (and optionally radius in km) to filter and order by distance.
      *
-     * @param array $filters owner_id?, country_id?, restaurant_type_id?, delivery_available?, search?, lat?, lng?, radius?, per_page? (int or 'all')
-     * @return LengthAwarePaginator|EloquentCollection
+     * @param  array  $filters  owner_id?, country_id?, restaurant_type_id?, delivery_available?, search?, lat?, lng?, radius?, per_page? (int or 'all')
      */
     public function getActivePaginated(array $filters): LengthAwarePaginator|EloquentCollection
     {
@@ -67,6 +65,7 @@ class RestaurantRepository extends BaseRepository implements RestaurantRepositor
         if (isset($filters['per_page']) && (string) $filters['per_page'] === 'all') {
             return $query->get();
         }
+
         return $query->paginate((int) ($filters['per_page'] ?? 15));
     }
 
@@ -77,17 +76,13 @@ class RestaurantRepository extends BaseRepository implements RestaurantRepositor
     {
         $lat = $filters['lat'] ?? null;
         $lng = $filters['lng'] ?? null;
+
         return $lat !== null && $lat !== '' && $lng !== null && $lng !== ''
             && is_numeric($lat) && is_numeric($lng);
     }
 
     /**
      * Get active restaurants within radius (km) of lat/long.
-     *
-     * @param float $latitude
-     * @param float $longitude
-     * @param float $radiusKm
-     * @return EloquentCollection
      */
     public function getNearby(float $latitude, float $longitude, float $radiusKm): EloquentCollection
     {
@@ -101,9 +96,6 @@ class RestaurantRepository extends BaseRepository implements RestaurantRepositor
 
     /**
      * Find restaurant by ID with relations (country, restaurantType, user, menus, reviews).
-     *
-     * @param int $id
-     * @return Restaurant
      */
     public function findWithRelations(int $id): Restaurant
     {
@@ -115,8 +107,7 @@ class RestaurantRepository extends BaseRepository implements RestaurantRepositor
     /**
      * Get all restaurants (admin) with optional status filter. Paginated unless per_page=all.
      *
-     * @param array $filters status?, per_page? (int or 'all')
-     * @return LengthAwarePaginator|EloquentCollection
+     * @param  array  $filters  status?, search? (name/city/food item, same as public list), per_page? (int or 'all')
      */
     public function getAllPaginated(array $filters): LengthAwarePaginator|EloquentCollection
     {
@@ -126,19 +117,25 @@ class RestaurantRepository extends BaseRepository implements RestaurantRepositor
             $query->where('status', $filters['status']);
         }
 
+        if (! empty($filters['search'])) {
+            $pattern = $this->likePatternCaseInsensitive($filters['search']);
+            $query->where(function ($q) use ($pattern) {
+                $this->addSearchRestaurantNameCity($q, $pattern);
+                $this->addSearchByFoodItemName($q, $pattern);
+            });
+        }
+
         $query->orderByDesc('id');
 
         if (isset($filters['per_page']) && (string) $filters['per_page'] === 'all') {
             return $query->get();
         }
+
         return $query->paginate((int) ($filters['per_page'] ?? 15));
     }
 
     /**
      * Find restaurant with food items relation (for admin).
-     *
-     * @param int $id
-     * @return Restaurant
      */
     public function findWithFoodItems(int $id): Restaurant
     {
@@ -150,8 +147,7 @@ class RestaurantRepository extends BaseRepository implements RestaurantRepositor
     /**
      * Get last restaurant by code prefix (e.g. VN-) for generating next code.
      *
-     * @param string $codePrefix e.g. "VN"
-     * @return Restaurant|null
+     * @param  string  $codePrefix  e.g. "VN"
      */
     public function getLastByCodePrefix(string $codePrefix): ?Restaurant
     {
@@ -164,9 +160,7 @@ class RestaurantRepository extends BaseRepository implements RestaurantRepositor
     /**
      * Paginated list of restaurants by owner (user_id). Always all statuses (dashboard); newest first.
      *
-     * @param int $userId
-     * @param array $filters per_page?
-     * @return LengthAwarePaginator
+     * @param  array  $filters  per_page?
      */
     public function getByOwnerId(int $userId, array $filters = []): LengthAwarePaginator
     {
@@ -214,7 +208,7 @@ class RestaurantRepository extends BaseRepository implements RestaurantRepositor
      */
     private function likePatternCaseInsensitive(string $keyword): string
     {
-        return '%' . mb_strtolower(trim($keyword), 'UTF-8') . '%';
+        return '%'.mb_strtolower(trim($keyword), 'UTF-8').'%';
     }
 
     /**
@@ -228,12 +222,16 @@ class RestaurantRepository extends BaseRepository implements RestaurantRepositor
             if ($driver === 'pgsql') {
                 $foodQuery->where(function ($sub) use ($pattern) {
                     $sub->whereRaw('LOWER(COALESCE(name->>\'en\', \'\')) LIKE ?', [$pattern])
+                        ->orWhereRaw('LOWER(COALESCE(name->>\'vi\', \'\')) LIKE ?', [$pattern])
+                        ->orWhereRaw('LOWER(COALESCE(name->>\'ko\', \'\')) LIKE ?', [$pattern])
                         ->orWhereRaw('LOWER(COALESCE(name->>\'vn\', \'\')) LIKE ?', [$pattern])
                         ->orWhereRaw('LOWER(COALESCE(name->>\'kr\', \'\')) LIKE ?', [$pattern]);
                 });
             } else {
                 $foodQuery->where(function ($sub) use ($pattern) {
                     $sub->whereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, "$.en"))) LIKE ?', [$pattern])
+                        ->orWhereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, "$.vi"))) LIKE ?', [$pattern])
+                        ->orWhereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, "$.ko"))) LIKE ?', [$pattern])
                         ->orWhereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, "$.vn"))) LIKE ?', [$pattern])
                         ->orWhereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, "$.kr"))) LIKE ?', [$pattern]);
                 });
